@@ -1,0 +1,25 @@
+<!--- index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DoggoGPT-Mini</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
+    <script defer src="{{ url_for('static', filename='js/index.js') }}"></script>
+</head>
+<body>
+    <div class="chat-container">
+        <h1>DoggoGPT-Mini</h1>
+        <h2>Translate Between English &amp; DoggoLingo using AI Magic!</h2>
+        <div class="chat-log" id="chat-log"></div>
+        <form id="chat-form">
+            <select name="direction" class="translation-direction">
+                <option value="eng_to_doggo">English to Doggo</option>
+                <option value="doggo_to_eng">Doggo to English</option>
+            </select>
+            <input type="text" name="message" class="message-box" placeholder="Enter your message...">
+            <button type="submit">Translate Message</button>
+        </form>
+        <img src="{{ url_for('static', filename='images/bars-rotate-fade.svg') }}" class="spinner" id="spinner" alt="Loading...">
+    </div>
+</body>
+</html>
