@@ -28,6 +28,10 @@ git --version
 sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 
+# Pull repository from GitHub
+git clone https://github.com/DrCBeatz/doggo-gpt-mini.git
+cd doggo-gpt-mini
+
 # Pull the latest Docker image and start the app
 docker-compose up -d --build
 
