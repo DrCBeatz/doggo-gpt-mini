@@ -6,8 +6,19 @@ body {
   color: #e0e0e0;
 }
 
+@media (max-width: 768px) {
+  .chat-container {
+    width: 90%;
+  }
+}
+
+@media (min-width: 768px) {
+  .chat-container {
+    width: 80%;
+  }
+}
+
 .chat-container {
-  width: 50%;
   margin: auto;
   text-align: center;
 }
@@ -25,11 +36,11 @@ h2 {
 .chat-log {
   border: 1px solid #444;
   padding: 10px;
-  height: 300px;
+  height: 500px;
   overflow-y: scroll;
   white-space: pre-wrap;
   background-color: #1e1e1e;
-  background-image: url('/static/images/doggo_gpt_mini.jpg');
+  background-image: url("/static/images/doggo_gpt_mini.jpg");
   background-size: cover; /* Ensure the image covers the entire area */
   background-repeat: no-repeat;
   background-position: center;
@@ -46,7 +57,12 @@ h2 {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5); /* Adjust the opacity and color as needed */
+  background-color: rgba(
+    0,
+    0,
+    0,
+    0.5
+  ); /* Adjust the opacity and color as needed */
   z-index: 1;
 }
 
@@ -55,7 +71,8 @@ h2 {
   z-index: 2;
 }
 
-.message-box, .translation-direction {
+.message-box,
+.translation-direction {
   width: calc(100% - 0px); /* Adjusted for padding and border */
   height: 50px;
   background-color: #333;
