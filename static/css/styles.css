@@ -22,6 +22,39 @@ h2 {
   color: #b0b0b0; /* Slightly darker grey */
 }
 
+.chat-log {
+  border: 1px solid #444;
+  padding: 10px;
+  height: 300px;
+  overflow-y: scroll;
+  white-space: pre-wrap;
+  background-color: #1e1e1e;
+  background-image: url('/static/images/doggo_gpt_mini.jpg');
+  background-size: cover; /* Ensure the image covers the entire area */
+  background-repeat: no-repeat;
+  background-position: center;
+  box-sizing: border-box;
+  text-align: left; /* Ensure text is left-aligned */
+  margin-bottom: 10px; /* Add margin to separate from input */
+  position: relative; /* Required for the overlay */
+}
+
+.chat-log::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* Adjust the opacity and color as needed */
+  z-index: 1;
+}
+
+.chat-log p {
+  position: relative; /* Ensure text is above the overlay */
+  z-index: 2;
+}
+
 .message-box, .translation-direction {
   width: calc(100% - 0px); /* Adjusted for padding and border */
   height: 50px;
@@ -38,18 +71,6 @@ h2 {
   -webkit-appearance: none; /* Remove default styling on Webkit browsers */
   -moz-appearance: none; /* Remove default styling on Mozilla browsers */
   appearance: none; /* Remove default styling */
-}
-
-.chat-log {
-  border: 1px solid #444;
-  padding: 10px;
-  height: 300px;
-  overflow-y: scroll;
-  white-space: pre-wrap;
-  background-color: #1e1e1e;
-  box-sizing: border-box;
-  text-align: left; /* Ensure text is left-aligned */
-  margin-bottom: 10px; /* Add margin to separate from input */
 }
 
 button {
@@ -71,4 +92,10 @@ button:hover {
   display: none; /* Hide the spinner by default */
   margin: 20px auto;
   filter: invert(1); /* Invert the colors of the SVG from black to white */
+}
+
+.form-width {
+  width: 100%;
+  display: block;
+  margin: 0 auto;
 }

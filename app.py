@@ -29,7 +29,7 @@ def load_doggo_dictionary(file_path):
             doggo_dict[doggo.lower()] = english
     return doggo_dict
 
-DOGGO_DICT = load_doggo_dictionary('doggo_dictionary.csv')
+DOGGO_DICT = load_doggo_dictionary('data/doggo_dictionary.csv')
 
 def update_context(user_input, direction):
     context = "Context: "
