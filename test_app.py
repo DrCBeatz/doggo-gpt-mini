@@ -1,8 +1,15 @@
 # test_app.py
 
+import os
 import pytest
-from app import app, update_context, DOGGO_DICT
+from app import (
+    app, 
+    update_context,
+    DOGGO_DICT, 
+    load_doggo_dictionary
+    )
 from unittest.mock import patch
+import csv
 
 @pytest.fixture
 def client():
@@ -47,3 +54,18 @@ def test_update_context():
     context = update_context(user_input, direction)
     assert "bork->" in context
     assert "doggo->" in context
+
+def test_load_doggo_dictionary():
+    # Mock CSV file pth
+    test_csv_path = 'data/test_doggo_dictionary.csv'
+    with open(test_csv_path, mode='w', newline='') as file:
+        write = csv.writer(file)
+        write.writerow(['English', 'Doggo'])
+        write.writerow(['bone', 'bark'])
+
+    doggo_dict = load_doggo_dictionary(test_csv_path)
+    assert doggo_dict['bone'] == 'bark'
+    assert doggo_dict['bark'] == 'bone'
+
+    # Clean up
+    os.remove(test_csv_path)
