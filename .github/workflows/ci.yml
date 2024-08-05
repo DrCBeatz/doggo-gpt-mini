@@ -29,10 +29,24 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
 
+    - name: Set Docker debug mode
+      run: echo "DOCKER_BUILDKIT=1" >> $GITHUB_ENV
+
+    - name: Stop and remove existing containers
+      run: |
+        docker-compose down || true
+        docker container prune -f
+
+    - name: List running containers
+      run: docker ps
+
     - name: Build and run Docker containers
       run: |
         docker compose -f docker-compose.yml up -d --build
-        
+  
+    - name: Show Docker daemon logs
+      run: docker logs $(docker ps -q)        
+      
     - name: Pull the model
       run: |
         docker compose exec -T ollama ollama pull llama3.1:8b
