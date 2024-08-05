@@ -1,6 +1,7 @@
 # test_app.py
 
 import os
+from dotenv import load_dotenv
 import pytest
 from app import (
     app, 
@@ -10,6 +11,7 @@ from app import (
     )
 from unittest.mock import patch
 import csv
+
 
 @pytest.fixture
 def client():
@@ -69,3 +71,6 @@ def test_load_doggo_dictionary():
 
     # Clean up
     os.remove(test_csv_path)
+
+def test_env_vars():
+    load_dotenv()
