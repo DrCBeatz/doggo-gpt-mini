@@ -1,0 +1,49 @@
+# .github/workflows/ci.yml
+
+name: CI
+
+on:
+  push:
+    branches:
+      - main  # Change this to the branch you want to trigger on push
+  pull_request:
+    branches:
+      - main  # Change this to the branch you want to trigger on pull request
+
+jobs:
+  test:
+    runs-on: ubuntu-latest  # Use the latest Ubuntu runner
+
+    services:
+      docker:
+        image: docker:20.10-dind
+        options: --privileged
+        ports:
+          - 5000:5000
+          - 11434:11434
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Set up Docker BuildKit
+      uses: docker/setup-buildx-action@v2
+
+    - name: Build and run Docker containers
+      run: |
+        docker-compose -f docker-compose.yml up -d --build
+        
+    - name: Pull the model
+      run: |
+        docker-compose exec -T ollama ollama pull llama3.1:8b
+
+    - name: Run tests
+      run: |
+        docker-compose exec -T flask-app pytest  # Runs tests inside the Flask app container
+
+    - name: Stop Docker containers
+      run: |
+        docker-compose down
