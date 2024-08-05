@@ -69,18 +69,18 @@ h2 {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(
-    0,
-    0,
-    0,
-    0.5
-  );
+  background-color: rgba(0, 0, 0, 0.5);
   z-index: 1;
 }
 
-.chat-log p {
+.chat-log p,
+.chat-log hr,
+.chat-log strong,
+.chat-log span,
+.chat-text-color {
   position: relative; /* Ensure text is above the overlay */
   z-index: 2;
+  color: #e0e0e0; /* Ensure all text within the chat-log is the same color */
 }
 
 .message-box,

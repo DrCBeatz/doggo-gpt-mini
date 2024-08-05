@@ -24,13 +24,13 @@ document.getElementById('chat-form').addEventListener('submit', function(event) 
     }).then(response => {
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
-        chatLog.innerHTML += '<p><strong>Input:</strong> ' + message + '</p>';
+        chatLog.innerHTML += '<p class="chat-text-color"><strong>Input:</strong> ' + message + '</p>';
         messageBox.value = '';
 
         function readChunk() {
             reader.read().then(function processText({ done, value }) {
                 if (done) {
-                    chatLog.innerHTML += '<hr>';
+                    chatLog.innerHTML += '<hr class="chat-text-color">';
                     // Hide the loading spinner when the response starts
                     spinner.style.display = 'none';
                     return;
@@ -40,7 +40,7 @@ document.getElementById('chat-form').addEventListener('submit', function(event) 
                 try {
                     const json = JSON.parse(chunk);
                     if (json.message && json.message.content) {
-                        chatLog.innerHTML += json.message.content.replace(/\n/g, '<br>');
+                        chatLog.innerHTML += '<span class="chat-text-color">' + json.message.content.replace(/\n/g, '<br>') + '</span>';
                         chatLog.scrollTop = chatLog.scrollHeight;
                     }
                 } catch (e) {
@@ -49,7 +49,7 @@ document.getElementById('chat-form').addEventListener('submit', function(event) 
                 return reader.read().then(processText);
             });
         }
-        chatLog.innerHTML += '<strong>DoggoGPT:</strong> ';
+        chatLog.innerHTML += '<strong class="chat-text-color">DoggoGPT:</strong> ';
         readChunk();
     });
 });
