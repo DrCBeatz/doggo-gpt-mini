@@ -29,9 +29,6 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
 
-    - name: Set up Docker BuildKit
-      uses: docker/setup-buildx-action@v2
-
     - name: Build and run Docker containers
       run: |
         docker compose -f docker-compose.yml up -d --build
