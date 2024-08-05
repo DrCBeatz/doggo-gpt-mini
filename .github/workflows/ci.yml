@@ -18,9 +18,9 @@ jobs:
       docker:
         image: docker:20.10-dind
         options: --privileged
-        # ports:
-        #   - 5000:5000
-        #   - 11434:11434
+        ports:
+          - 5000:5000
+          # - 11434:11434
 
     steps:
     - name: Checkout code
