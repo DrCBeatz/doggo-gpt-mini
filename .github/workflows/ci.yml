@@ -34,16 +34,16 @@ jobs:
 
     - name: Build and run Docker containers
       run: |
-        docker-compose -f docker-compose.yml up -d --build
+        docker compose -f docker-compose.yml up -d --build
         
     - name: Pull the model
       run: |
-        docker-compose exec -T ollama ollama pull llama3.1:8b
+        docker compose exec -T ollama ollama pull llama3.1:8b
 
     - name: Run tests
       run: |
-        docker-compose exec -T flask-app pytest  # Runs tests inside the Flask app container
+        docker compose exec -T flask-app pytest  # Runs tests inside the Flask app container
 
     - name: Stop Docker containers
       run: |
-        docker-compose down
+        docker compose down
