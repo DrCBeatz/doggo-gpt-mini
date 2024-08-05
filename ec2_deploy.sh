@@ -35,5 +35,5 @@ cd doggo-gpt-mini
 # Pull the latest Docker image and start the app
 docker-compose up -d --build
 
-# Pull the specific model for your application
+# Pull the Llama 3.1 8b model for the application using Ollama
 docker-compose exec ollama ollama pull llama3.1:8b
