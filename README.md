@@ -18,25 +18,35 @@ The app also performs context retrieval by searching for English/DoggoLingo term
 
 1. **Clone the repository**:
  
-`git clone https://github.com/DrCBeatz/doggo-gpt-mini.git`
+```bash
+git clone https://github.com/DrCBeatz/doggo-gpt-mini.git
+```
 
 2. **Navigate to the project directory**:
 
-`cd doggo-gpt-mini`
+```bash
+cd doggo-gpt-mini
+```
 
 3. **Build and run the containers**:
 
-`docker-compose up -d --build`
+```bash
+docker-compose up -d --build
+```
 
 4. **Pull the Llama 3.1 8b model**:
 
-`docker-compose exec ollama ollama pull llama3.1:8b`
+```bash
+docker-compose exec ollama ollama pull llama3.1:8b
+```
 
 5. **Access the app**:
 
 Open your web browser and go to:
 
-`http://localhost:5000`
+```bash
+http://localhost:5000
+```
 
 ## Usage
 
@@ -56,7 +66,7 @@ You can try traslating the following English messages to DoggoLingo:
 ### Deploying on EC2
 
 1. ***Launch an EC2 instance:***
-Follow AWS documentation[https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EC2_GetStarted.html] to set up an EC2 instance.
+Follow [AWS documentation](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EC2_GetStarted.html "AWS EC2 Documentation") to set up an EC2 instance.
 
 Recommended EC2 settings:
 - Choose the Amazon Linux 2023 Amazon Machine Image (Free tier elgigble).
