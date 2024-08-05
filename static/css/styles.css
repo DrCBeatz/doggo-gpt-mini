@@ -14,7 +14,19 @@ body {
 
 @media (min-width: 768px) {
   .chat-container {
-    width: 80%;
+    width: 60%;
+  }
+}
+
+@media (min-width: 992px) {
+  .chat-container {
+    width: 50%;
+  }
+}
+
+@media (min-width: 1200px) {
+  .chat-container {
+    width: 40%;
   }
 }
 
@@ -35,8 +47,8 @@ h2 {
 
 .chat-log {
   border: 1px solid #444;
-  padding: 10px;
   height: 500px;
+  padding: 10px;  
   overflow-y: scroll;
   white-space: pre-wrap;
   background-color: #1e1e1e;
@@ -62,7 +74,7 @@ h2 {
     0,
     0,
     0.5
-  ); /* Adjust the opacity and color as needed */
+  );
   z-index: 1;
 }
 
