@@ -30,15 +30,15 @@ jobs:
 
       - name: Build and push Docker images
         run: |
-          docker-compose -f docker-compose.yml build
+          docker compose -f docker-compose.yml build
 
       - name: Run tests
         run: |
-          docker-compose -f docker-compose.yml up -d
-          docker-compose exec flask-app pytest --maxfail=1 --disable-warnings -q
+          docker compose -f docker-compose.yml up -d
+          docker compose exec flask-app pytest --maxfail=1 --disable-warnings -q
         env:
           OLLAMA_API_URL: http://ollama:11434
           MODEL_NAME: llama3.1:8b
 
       - name: Shut down Docker containers
-        run: docker-compose down
+        run: docker compose down
