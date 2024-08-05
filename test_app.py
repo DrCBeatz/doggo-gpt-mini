@@ -1,7 +1,7 @@
 # test_app.py
 
 import pytest
-from app import app
+from app import app, update_context, DOGGO_DICT
 from unittest.mock import patch
 
 @pytest.fixture
@@ -31,3 +31,19 @@ def test_chat_route(mock_post, client):
     response = client.post('/chat', data={'message': 'Hello', 'direction': 'eng_to_doggo'})
     assert response.status_code == 200
     assert b'Woof woof' in response.data
+
+def test_update_context():
+    # Test English to Doggo
+    user_input = "I want to eat chicken nuggets"
+    direction = "eng_to_doggo"
+    context = update_context(user_input, direction)
+    assert "eat->" in context
+    assert "chicken->" in context
+    assert "nuggets->" in context
+
+    # Test Doggo to English
+    user_input = "I am doggo, bork bork!"
+    direction = "doggo_to_eng"
+    context = update_context(user_input, direction)
+    assert "bork->" in context
+    assert "doggo->" in context
