@@ -20,7 +20,7 @@ jobs:
         options: --privileged
         ports:
           - 5000:5000
-          # - 11434:11434
+          - 11434:11434
 
     steps:
     - name: Checkout code
