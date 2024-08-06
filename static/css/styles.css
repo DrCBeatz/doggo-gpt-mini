@@ -6,9 +6,39 @@ body {
   color: #e0e0e0;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 375px) {
   .chat-container {
     width: 90%;
+  }
+  .chat-log {
+    height: 300px;
+  }
+}
+
+@media (min-width: 376px) {
+  .chat-container {
+    width: 90%;
+  }
+  .chat-log {
+    height: 400px;
+  }
+}
+
+@media (min-width: 480px) {
+  .chat-container {
+    width: 90%;
+  }
+  .chat-log {
+    height: 500px;
+  }
+}
+
+@media (min-width: 768px) {
+  .chat-container {
+    width: 90%;
+  }
+  .chat-log {
+    height: 500px;
   }
 }
 
@@ -16,17 +46,26 @@ body {
   .chat-container {
     width: 60%;
   }
+  .chat-log {
+    height: 500px;
+  }
 }
 
 @media (min-width: 992px) {
   .chat-container {
     width: 50%;
   }
+  .chat-log {
+    height: 500px;
+  }
 }
 
 @media (min-width: 1200px) {
   .chat-container {
     width: 40%;
+  }
+  .chat-log {
+    height: 500px;
   }
 }
 
@@ -47,8 +86,7 @@ h2 {
 
 .chat-log {
   border: 1px solid #444;
-  height: 500px;
-  padding: 10px;  
+  padding: 10px;
   overflow-y: scroll;
   white-space: pre-wrap;
   background-color: #1e1e1e;
