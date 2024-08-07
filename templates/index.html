@@ -8,19 +8,19 @@
     <script defer src="{{ url_for('static', filename='js/index.js') }}"></script>
 </head>
 <body>
-    <div class="chat-container">
-        <h1>DoggoGPT-Mini</h1>
-        <h2>AI Powered DoggoLingo Translation</h2>
-        <div class="chat-log" id="chat-log"></div>
+    <div class="chat__container">
+        <h1 class="chat__title">DoggoGPT-Mini</h1>
+        <h2 class="chat__subtitle">AI Powered DoggoLingo Translation</h2>
+        <div class="chat__log" id="chat-log"></div>
         <form id="chat-form">
-            <select name="direction" class="translation-direction">
+            <select name="direction" class="chat__translation-direction">
                 <option value="eng_to_doggo">English to Doggo</option>
                 <option value="doggo_to_eng">Doggo to English</option>
             </select>
-            <input type="text" name="message" class="message-box" placeholder="Enter your message...">
-            <button type="submit">Translate Message</button>
+            <input type="text" name="message" class="chat__message-box" placeholder="Enter your message...">
+            <button type="submit" class="chat__button">Translate Message</button>
         </form>
-        <img src="{{ url_for('static', filename='images/bars-rotate-fade.svg') }}" class="spinner" id="spinner" alt="Loading...">
+        <img src="{{ url_for('static', filename='images/bars-rotate-fade.svg') }}" class="chat__spinner" id="spinner" alt="Loading...">
     </div>
 </body>
 </html>

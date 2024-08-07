@@ -2,8 +2,8 @@
 
 document.getElementById('chat-form').addEventListener('submit', function(event) {
     event.preventDefault();
-    const messageBox = document.querySelector('.message-box');
-    const directionSelect = document.querySelector('.translation-direction');
+    const messageBox = document.querySelector('.chat__message-box');
+    const directionSelect = document.querySelector('.chat__translation-direction');
     const chatLog = document.getElementById('chat-log');
     const spinner = document.getElementById('spinner');
     const message = messageBox.value;

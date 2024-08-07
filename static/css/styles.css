@@ -7,84 +7,75 @@ body {
 }
 
 @media (max-width: 375px) {
-  .chat-container {
+  .chat__container {
     width: 90%;
   }
-  .chat-log {
+  .chat__log {
     height: 300px;
   }
 }
 
 @media (min-width: 376px) {
-  .chat-container {
+  .chat__container {
     width: 90%;
   }
-  .chat-log {
+  .chat__log {
     height: 400px;
   }
 }
 
 @media (min-width: 480px) {
-  .chat-container {
+  .chat__container {
     width: 90%;
   }
-  .chat-log {
+  .chat__log {
     height: 500px;
   }
 }
 
 @media (min-width: 768px) {
-  .chat-container {
-    width: 90%;
-  }
-  .chat-log {
-    height: 500px;
-  }
-}
-
-@media (min-width: 768px) {
-  .chat-container {
+  .chat__container {
     width: 60%;
   }
-  .chat-log {
+  .chat__log {
     height: 500px;
   }
 }
 
 @media (min-width: 992px) {
-  .chat-container {
+  .chat__container {
     width: 50%;
   }
-  .chat-log {
+  .chat__log {
     height: 500px;
   }
 }
 
 @media (min-width: 1200px) {
-  .chat-container {
+  .chat__container {
     width: 40%;
   }
-  .chat-log {
+  .chat__log {
     height: 500px;
   }
 }
 
-.chat-container {
+.chat__container {
   margin: auto;
   text-align: center;
 }
 
-h1 {
+.chat__title {
   text-align: center;
   color: #e0e0e0;
 }
 
-h2 {
+.chat__subtitle {
   text-align: center;
   color: #b0b0b0; /* Slightly darker grey */
 }
 
-.chat-log {
+.chat__log {
   border: 1px solid #444;
   padding: 10px;
   overflow-y: scroll;
@@ -100,7 +91,7 @@ h2 {
   position: relative; /* Required for the overlay */
 }
 
-.chat-log::before {
+.chat__log::before {
   content: "";
   position: absolute;
   top: 0;
@@ -111,17 +102,17 @@ h2 {
   z-index: 1;
 }
 
-.chat-log p,
-.chat-log hr,
-.chat-log strong,
-.chat-log span {
+.chat__log p,
+.chat__log hr,
+.chat__log strong,
+.chat__log span {
   position: relative; /* Ensure text is above the overlay */
   z-index: 2;
   color: #e0e0e0; /* Ensure all text within the chat-log is the same color */
 }
 
-.message-box,
-.translation-direction {
+.chat__message-box,
+.chat__translation-direction {
   width: calc(100% - 0px); /* Adjusted for padding and border */
   height: 50px;
   background-color: #333;
@@ -133,13 +124,13 @@ h2 {
   margin-bottom: 10px; /* Add margin to separate from button */
 }
 
-.translation-direction {
+.chat__translation-direction {
   -webkit-appearance: none; /* Remove default styling on Webkit browsers */
   -moz-appearance: none; /* Remove default styling on Mozilla browsers */
   appearance: none; /* Remove default styling */
 }
 
-button {
+.chat__button {
   width: 100%;
   background-color: #444;
   color: #e0e0e0;
@@ -150,17 +141,17 @@ button {
   box-sizing: border-box;
 }
 
-button:hover {
+.chat__button:hover {
   background-color: #555;
 }
 
-.spinner {
+.chat__spinner {
   display: none; /* Hide the spinner by default */
   margin: 20px auto;
   filter: invert(1); /* Invert the colors of the SVG from black to white */
 }
 
-.form-width {
+.chat__form-width {
   width: 100%;
   display: block;
   margin: 0 auto;
