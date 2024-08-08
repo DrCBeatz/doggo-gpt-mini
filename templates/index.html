@@ -15,12 +15,12 @@
         <h2 class="chat__subtitle">AI Powered DoggoLingo Translation</h2>
         <div class="chat__log" id="chat-log"></div>
         <form id="chat-form">
-            <select name="direction" class="chat__translation-direction">
+            <select name="direction" class="chat__translation-direction" title="Select translation direction">
                 <option value="eng_to_doggo">English to Doggo</option>
                 <option value="doggo_to_eng">Doggo to English</option>
             </select>
-            <input type="text" name="message" class="chat__message-box" placeholder="Enter your message...">
-            <button type="submit" class="chat__button">Translate Message</button>
+            <input type="text" name="message" class="chat__message-box" placeholder="Enter your message..." title="Enter your message here">
+            <button type="submit" class="chat__button" title="Click to submit message for translation">Translate Message</button>
         </form>
         <img src="{{ url_for('static', filename='images/bars-rotate-fade.svg') }}" class="chat__spinner" id="spinner" alt="Loading...">
     </div>

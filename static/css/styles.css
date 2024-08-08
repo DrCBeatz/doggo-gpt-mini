@@ -12,6 +12,10 @@ h1, h2, h3, h4, h5, h6, p, strong, span, a, input, button, select {
   font-family: 'Exo 2', sans-serif;
 }
 
+input, button, select, div {
+  font-size: 1rem;
+}
+
 @media (max-width: 375px) {
   .chat__container {
     width: 90%;
