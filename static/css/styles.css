@@ -149,10 +149,13 @@ input, button, select, div {
   padding: 10px;
   cursor: pointer;
   box-sizing: border-box;
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .chat__button:hover {
   background-color: #555;
+  border-color: #666;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .chat__spinner {
