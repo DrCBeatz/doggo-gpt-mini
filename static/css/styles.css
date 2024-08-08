@@ -166,3 +166,24 @@ input, button, select, div {
   display: block;
   margin: 0 auto;
 }
+
+/* Styling for chat-log scrollbar for various web browser */
+
+.chat__log::-webkit-scrollbar {
+  width: 12px; /* Adjust the width of the scrollbar */
+}
+
+.chat__log::-webkit-scrollbar-track {
+  background: #1e1e1e; /* Background color of the scrollbar track */
+  border-radius: 5px; /* Add rounded corners */
+}
+
+.chat__log::-webkit-scrollbar-thumb {
+  background-color: #444; /* Background color of the scrollbar thumb */
+  border-radius: 5px; /* Add rounded corners */
+  border: 2px solid #1e1e1e; /* Add border to create space around the thumb */
+}
+
+.chat__log::-webkit-scrollbar-thumb:hover {
+  background-color: #555; /* Color of the scrollbar thumb on hover */
+}
