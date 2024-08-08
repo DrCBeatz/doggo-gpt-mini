@@ -6,11 +6,14 @@ document.getElementById('chat-form').addEventListener('submit', function(event) 
     const directionSelect = document.querySelector('.chat__translation-direction');
     const chatLog = document.getElementById('chat-log');
     const spinner = document.getElementById('spinner');
+    const chatButton = document.querySelector('.chat__button');
     const message = messageBox.value;
     const direction = directionSelect.value;
 
     // Show the loading spinner while waiting for a response
     spinner.style.display = 'block';
+    // Disable the button
+    chatButton.disabled = true;
 
     fetch('/chat', {
         method: 'POST',
@@ -33,6 +36,8 @@ document.getElementById('chat-form').addEventListener('submit', function(event) 
                     chatLog.innerHTML += '<hr>';
                     // Hide the loading spinner when the response starts
                     spinner.style.display = 'none';
+                    // Enable the button
+                    chatButton.disabled = false;
                     return;
                 }
                 const chunk = decoder.decode(value, { stream: true });
@@ -51,5 +56,10 @@ document.getElementById('chat-form').addEventListener('submit', function(event) 
         }
         chatLog.innerHTML += '<strong>DoggoGPT: </strong>';
         readChunk();
+    }).catch(error => {
+        console.error('Error:', error);
+        // Hide the spiner and enable the button in case of an error
+        spinner.style.display = 'none';
+        chatButton.disabled = false;
     });
 });

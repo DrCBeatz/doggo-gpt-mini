@@ -159,6 +159,12 @@ input, button, select, div {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
+.chat__button:disabled {
+  background-color: #666;
+  border-color: #777;
+  cursor: not-allowed;
+}
+
 .chat__spinner {
   display: none; /* Hide the spinner by default */
   margin: 20px auto;
