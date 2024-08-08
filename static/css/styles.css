@@ -1,9 +1,15 @@
 /* static/css/styles.css */
 
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700&display=swap');
+
 body {
-  font-family: Arial, sans-serif;
+  font-family: 'Exo 2', sans-serif;
   background-color: #121212;
   color: #e0e0e0;
+}
+
+h1, h2, h3, h4, h5, h6, p, strong, span, a, input, button, select {
+  font-family: 'Exo 2', sans-serif;
 }
 
 @media (max-width: 375px) {
@@ -72,7 +78,7 @@ body {
 
 .chat__subtitle {
   text-align: center;
-  color: #b0b0b0; /* Slightly darker grey */
+  color: #b0b0b0;
 }
 
 .chat__log {
