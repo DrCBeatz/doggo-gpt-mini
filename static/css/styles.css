@@ -97,7 +97,7 @@ input, button, select, div {
   background-position: center;
   box-sizing: border-box;
   text-align: left; /* Ensure text is left-aligned */
-  margin-bottom: 10px; /* Add margin to separate from input */
+  margin-bottom: 15px; /* Add margin to separate from input */
   position: relative; /* Required for the overlay */
 }
 
@@ -131,7 +131,7 @@ input, button, select, div {
   border-radius: 5px;
   padding: 10px;
   box-sizing: border-box;
-  margin-bottom: 10px; /* Add margin to separate from button */
+  margin-bottom: 15px; /* Add margin to separate from button */
 }
 
 .chat__translation-direction {
