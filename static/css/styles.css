@@ -138,6 +138,7 @@ input, button, select, div {
   -webkit-appearance: none; /* Remove default styling on Webkit browsers */
   -moz-appearance: none; /* Remove default styling on Mozilla browsers */
   appearance: none; /* Remove default styling */
+  cursor: pointer;
 }
 
 .chat__button {
