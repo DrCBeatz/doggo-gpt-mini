@@ -100,4 +100,9 @@ def test_chat_route_timeout(mock_post, client):
 def test_favicon_served(client):
     response = client.get('/static/favicon.ico')
     assert response.status_code == 200
-    print(response.content_type)
+
+def test_index_html(client):
+    response = client.get('/')
+    assert b'<title>DoggoGPT-Mini</title>' in response.data
+    assert b'<h1 class="chat__title">DoggoGPT-Mini</h1>' in response.data
+    assert b'<h2 class="chat__subtitle">AI-Powered DoggoLingo Translation</h2>' in response.data
