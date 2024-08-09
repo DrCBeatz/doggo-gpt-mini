@@ -16,6 +16,12 @@ document.getElementById('chat-form').addEventListener('submit', function(event) 
         return;
     }
 
+    if (!['eng_to_doggo', 'doggo_to_eng'].includes(direction)) {
+        alert('Please select a valid translation direction.');
+        eventNames.preventDefault();
+        return;
+    }
+
     // Show the loading spinner while waiting for a response
     spinner.style.display = 'block';
     // Disable the button

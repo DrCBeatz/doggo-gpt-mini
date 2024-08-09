@@ -111,3 +111,7 @@ def test_index_html(client):
 def test_chat_route_empty_input(client):
     response = client.post('/chat', data={'message': '', 'direction': 'eng_to_doggo'})
     assert response.status_code == 400
+
+def test_chat_route_invalid_direction(client):
+    response = client.post('/chat', data={'message': 'Hello', 'direction': 'invalid_direction'})
+    assert response.status_code == 400
