@@ -100,6 +100,7 @@ def test_chat_route_timeout(mock_post, client):
 def test_favicon_served(client):
     response = client.get('/static/favicon.ico')
     assert response.status_code == 200
+    assert response.content_type == 'image/vnd.microsoft.icon'
 
 def test_index_html(client):
     response = client.get('/')
