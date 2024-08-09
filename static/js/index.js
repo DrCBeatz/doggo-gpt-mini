@@ -1,5 +1,29 @@
 // static/js/index.js
 
+function showAlert(message, type = 'error') {
+    const alertBox = document.getElementById('chat-alert');
+    alertBox.textContent = message;
+    alertBox.classList.add('chat__alert--visible');
+    alertBox.classList.remove('chat__alert--hidden');
+
+    if (type === 'error') {
+        alertBox.classList.add('chat__alert--error');
+    } else {
+        alertBox.classList.remove('chat__alert--error');
+    }
+
+    // Hide the alert after 3 seconds with a fade-out effect
+    setTimeout(() => {
+        alertBox.classList.add('chat__alert--hidden');
+        alertBox.classList.remove('chat__alert--visible');
+
+        // Optionally hide the element after the fade-out transition completes
+        setTimeout(() => {
+            alertBox.classList.remove('chat__alert--hidden');
+        }, 500); // Match this duration to the transition duration in CSS
+    }, 3000);
+}
+
 document.getElementById('chat-form').addEventListener('submit', function(event) {
     event.preventDefault();
     const messageBox = document.querySelector('.chat__message-box');
@@ -11,13 +35,12 @@ document.getElementById('chat-form').addEventListener('submit', function(event) 
     const direction = directionSelect.value;
 
     if (message === '') {
-        alert('Please enter a message before submitting.');
-        event.preventDefault();
+        showAlert('Please enter a message before submitting.');
         return;
     }
 
     if (!['eng_to_doggo', 'doggo_to_eng'].includes(direction)) {
-        alert('Please select a valid translation direction.');
+        showAlert('Please select a valid translation direction.');
         eventNames.preventDefault();
         return;
     }
@@ -70,6 +93,7 @@ document.getElementById('chat-form').addEventListener('submit', function(event) 
         readChunk();
     }).catch(error => {
         console.error('Error:', error);
+        showAlert('Something went wrong. Please try again later.');
         // Hide the spiner and enable the button in case of an error
         spinner.style.display = 'none';
         chatButton.disabled = false;

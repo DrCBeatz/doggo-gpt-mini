@@ -197,3 +197,33 @@ input, button, select, div {
 .chat__log::-webkit-scrollbar-thumb:hover {
   background-color: #555; /* Color of the scrollbar thumb on hover */
 }
+
+.chat__alert {
+  visibility: hidden;
+  background-color: #333;
+  color: #e0e0e0;
+  border: 1px solid #444;
+  border-radius: 5px;
+  padding: 15px;
+  margin: 10px 0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
+}
+
+.chat__alert--visible {
+  visibility: visible;
+  opacity: 1;
+}
+
+.chat__alert--hidden {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.chat__alert--error {
+  border-color: #e57373;
+  background-color: #b71c1c;
+  color: #fff;
+}
