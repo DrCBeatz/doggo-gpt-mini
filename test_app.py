@@ -76,3 +76,10 @@ def test_env_vars():
     load_dotenv()
     assert os.getenv('OLLAMA_API_URL') == 'http://ollama:11434'
     assert os.getenv('MODEL_NAME') == 'llama3.1:8b'
+
+def test_update_context_no_matches():
+    user_input = "This phrase has no matching words"
+    direction = "eng_to_doggo"
+    context = update_context(user_input, direction)
+    assert context == "Context: "  # Expecting an empty context since no words matched
+
