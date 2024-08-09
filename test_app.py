@@ -83,3 +83,10 @@ def test_update_context_no_matches():
     context = update_context(user_input, direction)
     assert context == "Context: "  # Expecting an empty context since no words matched
 
+def test_update_context_case_insensitive():
+    user_input = "I WANT TO EAT Chicken Nuggets"
+    direction = "eng_to_doggo"
+    context = update_context(user_input.lower(), direction)
+    assert "eat->" in context
+    assert "chicken->" in context
+    assert "nuggets->" in context
