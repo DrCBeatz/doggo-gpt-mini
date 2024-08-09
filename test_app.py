@@ -96,3 +96,8 @@ def test_chat_route_timeout(mock_post, client):
     mock_post.side_effect = requests.exceptions.Timeout
     response = client.post('/chat', data={'message': 'Hello', 'direction': 'eng_to_doggo'})
     assert response.status_code == 500
+
+def test_favicon_served(client):
+    response = client.get('/static/favicon.ico')
+    assert response.status_code == 200
+    print(response.content_type)
