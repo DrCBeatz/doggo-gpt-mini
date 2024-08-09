@@ -74,3 +74,5 @@ def test_load_doggo_dictionary():
 
 def test_env_vars():
     load_dotenv()
+    assert os.getenv('OLLAMA_API_URL') == 'http://ollama:11434'
+    assert os.getenv('MODEL_NAME') == 'llama3.1:8b'
