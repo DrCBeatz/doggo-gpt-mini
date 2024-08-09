@@ -11,7 +11,7 @@ from app import (
     )
 from unittest.mock import patch
 import csv
-
+import requests
 
 @pytest.fixture
 def client():
@@ -91,9 +91,8 @@ def test_update_context_case_insensitive():
     assert "chicken->" in context
     assert "nuggets->" in context
 
-@pytest.fixture
-def test_chat_route_large_input(client):
-    large_message = "Hello " * 1000  # Very large input
-    response = client.post('/chat', data={'message': large_message, 'direction': 'eng_to_doggo'})
-    assert response.status_code == 200
-    assert b'Woof woof' in response.data
+@patch('app.requests.post')
+def test_chat_route_timeout(mock_post, client):
+    mock_post.side_effect = requests.exceptions.Timeout
+    response = client.post('/chat', data={'message': 'Hello', 'direction': 'eng_to_doggo'})
+    assert response.status_code == 500
