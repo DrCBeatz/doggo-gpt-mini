@@ -107,3 +107,7 @@ def test_index_html(client):
     assert b'<title>DoggoGPT-Mini</title>' in response.data
     assert b'<h1 class="chat__title">DoggoGPT-Mini</h1>' in response.data
     assert b'<h2 class="chat__subtitle">AI-Powered DoggoLingo Translation</h2>' in response.data
+
+def test_chat_route_empty_input(client):
+    response = client.post('/chat', data={'message': '', 'direction': 'eng_to_doggo'})
+    assert response.status_code == 400

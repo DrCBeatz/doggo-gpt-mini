@@ -10,6 +10,12 @@ document.getElementById('chat-form').addEventListener('submit', function(event) 
     const message = messageBox.value;
     const direction = directionSelect.value;
 
+    if (message === '') {
+        alert('Please enter a message before submitting.');
+        event.preventDefault();
+        return;
+    }
+
     // Show the loading spinner while waiting for a response
     spinner.style.display = 'block';
     // Disable the button

@@ -1,6 +1,6 @@
 # app.py
 
-from flask import Flask, render_template, request, Response
+from flask import Flask, render_template, request, Response, jsonify
 import os
 import requests
 import logging
@@ -68,8 +68,15 @@ def index():
 
 @app.route('/chat', methods=['POST'])
 def chat():
-    user_input = request.form['message']
+    user_input = request.form['message'].strip()
     direction = request.form['direction']
+
+    if not user_input:
+        return jsonify({'error': 'Messag cannot be empty'}), 400
+    
+    if direction not in ['eng_to_doggo', 'doggo_to_eng']:
+        return jsonify({'error': 'Invalid direction'}), 400
+    
     logging.debug(f"User input: {user_input}, Direction: {direction}")
     context = update_context(user_input, direction)
     return ask_question(user_input, context, direction)
