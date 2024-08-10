@@ -6,7 +6,6 @@ import pytest
 from app import (
     app, 
     update_context,
-    DOGGO_DICT, 
     load_doggo_dictionary
     )
 from unittest.mock import patch
