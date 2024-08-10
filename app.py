@@ -72,14 +72,23 @@ def chat():
     direction = request.form['direction']
 
     if not user_input:
-        return jsonify({'error': 'Messag cannot be empty'}), 400
-    
+        return jsonify({'error': 'Message cannot be empty'}), 400
+
     if direction not in ['eng_to_doggo', 'doggo_to_eng']:
         return jsonify({'error': 'Invalid direction'}), 400
-    
+
     logging.debug(f"User input: {user_input}, Direction: {direction}")
     context = update_context(user_input, direction)
-    return ask_question(user_input, context, direction)
+
+    try:
+        return ask_question(user_input, context, direction)
+    except requests.exceptions.Timeout:
+        # Return a 504 Gateway Timeout if a timeout exception is caught
+        return jsonify({'error': 'The request to the translation service timed out.'}), 504
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Request failed: {e}")
+        # Handle other potential request errors here
+        return jsonify({'error': 'An error occurred while processing your request.'}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
