@@ -2,9 +2,11 @@
 
 function showAlert(message, type = 'error') {
     const alertBox = document.getElementById('chat-alert');
+    const body = document.body;
     alertBox.textContent = message;
     alertBox.classList.add('chat__alert--visible');
     alertBox.classList.remove('chat__alert--hidden');
+    body.classList.add('prevent-scroll');
 
     if (type === 'error') {
         alertBox.classList.add('chat__alert--error');
@@ -16,6 +18,7 @@ function showAlert(message, type = 'error') {
     setTimeout(() => {
         alertBox.classList.add('chat__alert--hidden');
         alertBox.classList.remove('chat__alert--visible');
+        body.classList.remove('prevent-scroll');
 
         // Optionally hide the element after the fade-out transition completes
         setTimeout(() => {
@@ -41,12 +44,12 @@ document.getElementById('chat-form').addEventListener('submit', function(event) 
 
     if (!['eng_to_doggo', 'doggo_to_eng'].includes(direction)) {
         showAlert('Please select a valid translation direction.');
-        eventNames.preventDefault();
         return;
     }
 
     // Show the loading spinner while waiting for a response
     spinner.style.display = 'block';
+    document.body.classList.add('prevent-scroll'); // Prevent scrolling while spinner is shown
     // Disable the button
     chatButton.disabled = true;
 
@@ -71,6 +74,7 @@ document.getElementById('chat-form').addEventListener('submit', function(event) 
                     chatLog.innerHTML += '<hr>';
                     // Hide the loading spinner when the response starts
                     spinner.style.display = 'none';
+                    document.body.classList.remove('prevent-scroll'); // Re-enable scrolling
                     // Enable the button
                     chatButton.disabled = false;
                     return;
@@ -94,8 +98,9 @@ document.getElementById('chat-form').addEventListener('submit', function(event) 
     }).catch(error => {
         console.error('Error:', error);
         showAlert('Something went wrong. Please try again later.');
-        // Hide the spiner and enable the button in case of an error
+        // Hide the spinner and enable the button in case of an error
         spinner.style.display = 'none';
+        document.body.classList.remove('prevent-scroll'); // Re-enable scrolling
         chatButton.disabled = false;
     });
 });

@@ -8,6 +8,10 @@ body {
   color: #e0e0e0;
 }
 
+body.prevent-scroll {
+  overflow: hidden;
+}
+
 h1, h2, h3, h4, h5, h6, p, strong, span, a, input, button, select {
   font-family: 'Exo 2', sans-serif;
 }
