@@ -136,6 +136,18 @@ input, button, select, div {
   padding: 10px;
   box-sizing: border-box;
   margin-bottom: 15px; /* Add margin to separate from button */
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  opacity: 0.9;
+}
+
+.chat__message-box:focus,
+.chat__translation-direction:focus {
+  outline: none;
+  border-color: #888;
+  background-color: #444;
+  box-shadow: 0 0 5px rgba(136, 136, 136, 0.5);
+  box-shadow: 0 0 5px rgba(136, 136, 136, 0.5); /* Soft glow effect */
+  opacity: 1;
 }
 
 .chat__translation-direction {
