@@ -72,6 +72,7 @@ Recommended EC2 settings:
 - Choose the Amazon Linux 2023 Amazon Machine Image (Free tier elgigble).
 - Choose the c5.2xlarge Instance type (8 vCPUs, 16 Gb RAM) for adequate processing power.
 - Choose EC2 Spot Instances (under Advanced details in the AWS Management Console) to save 90% on costs.
+- Choose at least 10Gb of storage for the root volume under 'Configure Storage'.
 
 2. ***Conect to your instance:*** 
 SSH into your EC2 instance, or use AWS EC2 Connect in the AWS Management Console.
