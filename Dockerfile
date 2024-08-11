@@ -21,5 +21,5 @@ COPY . /app/
 EXPOSE 80 443
 
 # Command to run the Flask app
-CMD ["gunicorn", "-b", "0.0.0.0:5000", "app:app"]
+CMD ["gunicorn", "-b", "0.0.0.0:80", "app:app"]
 

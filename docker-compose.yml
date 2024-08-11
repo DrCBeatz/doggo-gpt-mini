@@ -4,7 +4,7 @@ services:
   flask-app:
     build: .
     ports:
-      - "5000:5000"
+      - "80:80"
     environment:
       - OLLAMA_API_URL=http://ollama:11434
       - MODEL_NAME=llama3.1:8b
