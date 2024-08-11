@@ -112,7 +112,7 @@ input, button, select, div {
   padding: 0px 20px 20px 20px;
   overflow-y: auto;
   white-space: pre-wrap;
-  background-color: rgba(0, 0, 0, 0.5); /* Overlay color */
+  background-color: rgba(0, 0, 0, 0.3); /* Overlay color */
   background-image: url("/static/images/doggo_gpt_mini.jpg"), linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5));
   background-size: cover;
   background-repeat: no-repeat;
