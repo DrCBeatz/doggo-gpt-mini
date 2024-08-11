@@ -84,7 +84,7 @@ document.getElementById('chat-form').addEventListener('submit', function(event) 
                 try {
                     const json = JSON.parse(chunk);
                     if (json.message && json.message.content) {
-                        chatLog.innerHTML += '<span>' + json.message.content.replace(/\n/g, '<br>') + '</span>';
+                        chatLog.innerHTML += json.message.content.replace(/\n/g, '<br>');
                         chatLog.scrollTop = chatLog.scrollHeight;
                     }
                 } catch (e) {

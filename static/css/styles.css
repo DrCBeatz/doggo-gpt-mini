@@ -12,7 +12,7 @@ body.prevent-scroll {
   overflow: hidden;
 }
 
-h1, h2, h3, h4, h5, h6, p, strong, span, a, input, button, select {
+h1, h2, h3, h4, h5, h6, p, strong, a, input, button, select {
   font-family: 'Exo 2', sans-serif;
 }
 
@@ -126,8 +126,7 @@ input, button, select, div {
 
 .chat__log p,
 .chat__log hr,
-.chat__log strong,
-.chat__log span {
+.chat__log strong{
   position: relative;
   z-index: 2;
   color: #e0e0e0;
