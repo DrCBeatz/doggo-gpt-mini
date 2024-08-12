@@ -4,3 +4,4 @@ requests==2.32.3
 python-dotenv==1.0.1
 pytest==8.3.2
 gunicorn==23.0.0
+certbot==2.6.0
