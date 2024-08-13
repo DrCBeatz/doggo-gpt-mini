@@ -1,0 +1,251 @@
+/* public/styles.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700&display=swap');
+
+body {
+  font-family: 'Exo 2', sans-serif;
+  background-color: #121212;
+  color: #e0e0e0;
+}
+
+body.prevent-scroll {
+  overflow: hidden;
+}
+
+h1, h2, h3, h4, h5, h6, p, strong, a, input, button, select {
+  font-family: 'Exo 2', sans-serif;
+}
+
+input, button, select, div {
+  font-size: 1rem;
+}
+
+@media (max-width: 375px) {
+  .chat__container {
+    width: 90%;
+  }
+  .chat__log {
+    height: 300px;
+  }
+}
+
+@media (min-width: 376px) {
+  .chat__container {
+    width: 90%;
+  }
+  .chat__log {
+    height: 400px;
+  }
+}
+
+@media (min-width: 480px) {
+  .chat__container {
+    width: 90%;
+  }
+  .chat__log {
+    height: 500px;
+  }
+}
+
+@media (min-width: 768px) {
+  .chat__container {
+    width: 60%;
+  }
+  .chat__log {
+    height: 500px;
+  }
+}
+
+@media (min-width: 992px) {
+  .chat__container {
+    width: 50%;
+  }
+  .chat__log {
+    height: 500px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .chat__container {
+    width: 40%;
+  }
+  .chat__log {
+    height: 500px;
+  }
+}
+
+.chat__container {
+  margin: auto;
+  text-align: center;
+}
+
+@keyframes gradientAnimation {
+  0% {
+      background-position: 0% 50%;
+  }
+  50% {
+      background-position: 100% 50%;
+  }
+  100% {
+      background-position: 0% 50%;
+  }
+}
+
+.chat__title {
+  font-size: 3rem;
+  background: linear-gradient(270deg, #555, #777, #999, #bbb, #ddd);
+  background-size: 400% 400%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradientAnimation 5s ease infinite;
+}
+
+.chat__subtitle {
+  text-align: center;
+  color: #b0b0b0;
+}
+
+
+.chat__log {
+  border: 1px solid #444;
+  padding: 0px 20px 20px 20px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  background-color: rgba(0, 0, 0, 0.3); /* Overlay color */
+  background-image: url("doggo_gpt_mini.jpg"), linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5));
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-blend-mode: overlay; /* Blend the overlay color with the background image */
+  box-sizing: border-box;
+  text-align: left;
+  margin-bottom: 15px;
+  position: relative;
+}
+
+.chat__log p,
+.chat__log hr,
+.chat__log strong{
+  position: relative;
+  z-index: 2;
+  color: #e0e0e0;
+}
+
+.chat__message-box,
+.chat__translation-direction {
+  width: calc(100% - 0px); /* Adjusted for padding and border */
+  height: 50px;
+  background-color: #333;
+  color: #e0e0e0;
+  border: 1px solid #444;
+  border-radius: 5px;
+  padding: 10px;
+  box-sizing: border-box;
+  margin-bottom: 15px; /* Add margin to separate from button */
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  opacity: 0.9;
+}
+
+.chat__message-box:focus,
+.chat__translation-direction:focus {
+  outline: none;
+  border-color: #888;
+  background-color: #444;
+  box-shadow: 0 0 5px rgba(136, 136, 136, 0.5);
+  box-shadow: 0 0 5px rgba(136, 136, 136, 0.5); /* Soft glow effect */
+  opacity: 1;
+}
+
+.chat__translation-direction {
+  -webkit-appearance: none; /* Remove default styling on Webkit browsers */
+  -moz-appearance: none; /* Remove default styling on Mozilla browsers */
+  appearance: none; /* Remove default styling */
+  cursor: pointer;
+}
+
+.chat__button {
+  width: 100%;
+  background-color: #444;
+  color: #e0e0e0;
+  border: 1px solid #555;
+  border-radius: 5px;
+  padding: 10px;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.chat__button:hover {
+  background-color: #555;
+  border-color: #666;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.chat__button:disabled {
+  background-color: #666;
+  border-color: #777;
+  cursor: not-allowed;
+}
+
+.chat__spinner {
+  display: none; /* Hide the spinner by default */
+  margin: 20px auto;
+  filter: invert(1); /* Invert the colors of the SVG from black to white */
+}
+
+.chat__form-width {
+  width: 100%;
+  display: block;
+  margin: 0 auto;
+}
+
+/* Styling for chat-log scrollbar for various web browser */
+
+.chat__log::-webkit-scrollbar {
+  width: 12px; /* Adjust the width of the scrollbar */
+}
+
+.chat__log::-webkit-scrollbar-track {
+  background: #1e1e1e; /* Background color of the scrollbar track */
+  border-radius: 5px; /* Add rounded corners */
+}
+
+.chat__log::-webkit-scrollbar-thumb {
+  background-color: #444; /* Background color of the scrollbar thumb */
+  border-radius: 5px; /* Add rounded corners */
+  border: 2px solid #1e1e1e; /* Add border to create space around the thumb */
+}
+
+.chat__log::-webkit-scrollbar-thumb:hover {
+  background-color: #555; /* Color of the scrollbar thumb on hover */
+}
+
+.chat__alert {
+  visibility: hidden;
+  background-color: #333;
+  color: #e0e0e0;
+  border: 1px solid #444;
+  border-radius: 5px;
+  padding: 15px;
+  margin: 10px 0;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
+}
+
+.chat__alert--visible {
+  visibility: visible;
+  opacity: 1;
+}
+
+.chat__alert--hidden {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.chat__alert--error {
+  border-color: #e57373;
+  background-color: #b71c1c;
+  color: #fff;
+}
