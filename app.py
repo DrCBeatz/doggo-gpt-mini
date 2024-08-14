@@ -12,7 +12,7 @@ import json
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
 logging.basicConfig(level=logging.DEBUG)
 
 OLLAMA_API_URL = os.getenv('OLLAMA_API_URL', 'http://ollama:11434')
