@@ -52,7 +52,7 @@ document.getElementById('chat-form').addEventListener('submit', function(event) 
     document.body.classList.add('prevent-scroll'); // Prevent scrolling while spinner is shown
     chatButton.disabled = true; // Disable the button
 
-    fetch('http://localhost:80/chat_json', {
+    fetch('https://api.doggo-gpt-mini/chat_json', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
