@@ -1,2 +1,29 @@
 .DS_Store
 .env
+
+# Terraform state files
+terraform.tfstate
+terraform.tfstate.backup
+
+# Terraform plan files
+*.tfplan
+doggo-gpt-mini.plan
+
+# Terraform plugin and cache directories
+.terraform/
+.terraform.lock.hcl
+
+# Override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Crash log files
+crash.log
+
+# Terraform variable files with sensitive data
+*.tfvars
+
+# AWS CLI credentials (if stored locally, generally avoid this)
+.aws/
