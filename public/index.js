@@ -27,7 +27,7 @@ function showAlert(message, type = 'error') {
     }, 3000);
 }
 
-document.getElementById('chat-form').addEventListener('submit', function(event) {
+document.getElementById('chat-form').addEventListener('submit', function (event) {
     event.preventDefault();
     const messageBox = document.querySelector('.chat__message-box');
     const directionSelect = document.querySelector('.chat__translation-direction');
@@ -52,7 +52,7 @@ document.getElementById('chat-form').addEventListener('submit', function(event) 
     document.body.classList.add('prevent-scroll'); // Prevent scrolling while spinner is shown
     chatButton.disabled = true; // Disable the button
 
-    fetch('https://api.doggo-gpt-mini.com/chat_json', {
+    fetch('https://doggo-gpt-mini-api.com/chat_json', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded'
@@ -66,7 +66,7 @@ document.getElementById('chat-form').addEventListener('submit', function(event) 
         const decoder = new TextDecoder();
         chatLog.innerHTML += '<p><strong>Input:</strong> ' + message + '</p>';
         messageBox.value = '';
-        
+
         function readChunk() {
             return reader.read().then(({ done, value }) => {
                 if (done) {
@@ -76,10 +76,10 @@ document.getElementById('chat-form').addEventListener('submit', function(event) 
                     chatButton.disabled = false;
                     return;
                 }
-                
+
                 const chunk = decoder.decode(value, { stream: true });
                 const lines = chunk.split('\n\n'); // Split the streamed data
-                
+
                 lines.forEach(line => {
                     if (line.startsWith("data: ")) {
                         const content = JSON.parse(line.slice(6)).content; // Extract content
