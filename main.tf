@@ -1,4 +1,4 @@
-# doggo-gpt-mini.tf
+# main.tf
 
 provider "aws" {
   region = var.aws_region
@@ -239,10 +239,15 @@ resource "aws_lb_listener" "http_redirect_listener" {
 
 
 # Outputs
-output "alb_dns_name" {
-  value = aws_lb.doggo_gpt_alb.dns_name
+
+# ALB DNS Name
+output "alb_url" {
+  value = "https://${aws_lb.doggo_gpt_alb.dns_name}"
+  description = "The URL for the Application Load Balancer"
 }
 
-output "instance_public_ip" {
-  value = aws_instance.doggo_gpt_instance.public_ip
+# EC2 Instance Public IP with HTTP
+output "instance_url" {
+  value = "http://${aws_instance.doggo_gpt_instance.public_ip}"
+  description = "The URL for the EC2 instance"
 }
