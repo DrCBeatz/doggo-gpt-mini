@@ -8,6 +8,7 @@ terraform.tfstate.backup
 # Terraform plan files
 *.tfplan
 doggo-gpt-mini.plan
+main.plan
 
 # Terraform plugin and cache directories
 .terraform/
@@ -27,3 +28,5 @@ crash.log
 
 # AWS CLI credentials (if stored locally, generally avoid this)
 .aws/
+
+variables.tf

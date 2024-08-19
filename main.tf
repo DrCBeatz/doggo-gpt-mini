@@ -1,10 +1,12 @@
+# doggo-gpt-mini.tf
+
 provider "aws" {
-  region = "us-east-2"  # Replace with your desired region
+  region = var.aws_region
 }
 
 # Data source to get hosted zone ID
 data "aws_route53_zone" "doggo_gpt_zone" {
-  name = "doggo-gpt-mini-api.com."
+  name = "${var.domain_name}."
 }
 
 # Create a VPC
@@ -17,14 +19,14 @@ resource "aws_vpc" "doggo_gpt_vpc" {
 resource "aws_subnet" "doggo_gpt_subnet" {
   vpc_id            = aws_vpc.doggo_gpt_vpc.id
   cidr_block        = "10.0.1.0/24"
-  availability_zone = "us-east-2a"
+  availability_zone = var.availability_zones[0]
   map_public_ip_on_launch = true
 }
 
 resource "aws_subnet" "doggo_gpt_subnet_b" {
   vpc_id            = aws_vpc.doggo_gpt_vpc.id
   cidr_block        = "10.0.2.0/24"
-  availability_zone = "us-east-2b"
+  availability_zone = var.availability_zones[1]
   map_public_ip_on_launch = true
 }
 
@@ -88,8 +90,8 @@ resource "aws_security_group" "doggo_gpt_sg" {
 
 # EC2 Instance
 resource "aws_instance" "doggo_gpt_instance" {
-  ami                  = "ami-067df2907035c28c2"
-  instance_type        = "c6g.2xlarge"
+  ami                  = var.ami_id
+  instance_type        = var.instance_type
   subnet_id            = aws_subnet.doggo_gpt_subnet.id
   vpc_security_group_ids = [aws_security_group.doggo_gpt_sg.id]
 
@@ -148,7 +150,7 @@ user_data = <<-EOF
 
 resource "aws_route53_record" "doggo_gpt_api" {
   zone_id = data.aws_route53_zone.doggo_gpt_zone.zone_id
-  name    = "doggo-gpt-mini-api.com"
+  name    = var.domain_name
   type    = "A"
 
   alias {
@@ -161,7 +163,7 @@ resource "aws_route53_record" "doggo_gpt_api" {
 
 # ACM Certificate
 resource "aws_acm_certificate" "doggo_gpt_ssl_cert" {
-  domain_name       = "doggo-gpt-mini-api.com"
+  domain_name       = var.domain_name
   validation_method = "DNS"
 
   tags = {
