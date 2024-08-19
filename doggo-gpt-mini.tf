@@ -218,6 +218,24 @@ resource "aws_lb_listener" "doggo_gpt_listener" {
   }
 }
 
+# Listener for HTTP to HTTPS redirection
+resource "aws_lb_listener" "http_redirect_listener" {
+  load_balancer_arn = aws_lb.doggo_gpt_alb.arn
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    type = "redirect"
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
+}
+
+
 # Outputs
 output "alb_dns_name" {
   value = aws_lb.doggo_gpt_alb.dns_name
