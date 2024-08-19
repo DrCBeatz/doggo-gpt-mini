@@ -17,17 +17,17 @@ resource "aws_vpc" "doggo_gpt_vpc" {
 
 # Create subnets in different Availability Zones
 resource "aws_subnet" "doggo_gpt_subnet" {
-  vpc_id            = aws_vpc.doggo_gpt_vpc.id
-  cidr_block        = "10.0.1.0/24"
-  availability_zone = var.availability_zones[0]
-  map_public_ip_on_launch = true
+  vpc_id                   = aws_vpc.doggo_gpt_vpc.id
+  cidr_block               = "10.0.1.0/24"
+  availability_zone        = var.availability_zones[0]
+  map_public_ip_on_launch  = true
 }
 
 resource "aws_subnet" "doggo_gpt_subnet_b" {
-  vpc_id            = aws_vpc.doggo_gpt_vpc.id
-  cidr_block        = "10.0.2.0/24"
-  availability_zone = var.availability_zones[1]
-  map_public_ip_on_launch = true
+  vpc_id                   = aws_vpc.doggo_gpt_vpc.id
+  cidr_block               = "10.0.2.0/24"
+  availability_zone        = var.availability_zones[1]
+  map_public_ip_on_launch  = true
 }
 
 # Create an Internet Gateway
@@ -88,64 +88,65 @@ resource "aws_security_group" "doggo_gpt_sg" {
   }
 }
 
-# EC2 Instance
-resource "aws_instance" "doggo_gpt_instance" {
-  ami                  = var.ami_id
-  instance_type        = var.instance_type
-  subnet_id            = aws_subnet.doggo_gpt_subnet.id
-  vpc_security_group_ids = [aws_security_group.doggo_gpt_sg.id]
+# Create a launch template
+resource "aws_launch_template" "doggo_gpt_template" {
+  name_prefix   = "doggo-gpt-template"
+  image_id      = var.ami_id
+  instance_type = var.instance_type
 
-  associate_public_ip_address = true
-
-user_data = <<-EOF
+  user_data = base64encode(<<-EOF
     #!/bin/bash
-    # Update the system
     sudo yum update -y
-
-    # Install Docker
     sudo yum -y install docker
-
-    # Start Docker service
     sudo service docker start
-
-    # Enable Docker service to start on boot
     sudo systemctl enable docker
-
-    # Add ec2-user to the docker group
     sudo usermod -a -G docker ec2-user
-
-    # Give ec2-user permission to access Docker socket
     sudo chmod 666 /var/run/docker.sock
-
-    # Install Git
     sudo yum install git -y
-
-    # Check Git version
-    git --version
-
-    # Install Docker Compose
     sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
     sudo chmod +x /usr/local/bin/docker-compose
-
-    # Pull repository from GitHub
     git clone https://github.com/DrCBeatz/doggo-gpt-mini.git
     cd doggo-gpt-mini
-
-    # Pull the latest Docker image and start the app
     docker-compose up -d --build
-
-    # Pull the Llama 3.1 8b model for the application using Ollama
     docker-compose exec ollama ollama pull llama3.1:8b
   EOF
+  )
 
+  network_interfaces {
+    associate_public_ip_address = true
+    security_groups             = [aws_security_group.doggo_gpt_sg.id]
+    subnet_id                   = aws_subnet.doggo_gpt_subnet.id
+  }
 
-  root_block_device {
-    volume_size = 10
+  block_device_mappings {
+    device_name = "/dev/xvda"
+    ebs {
+      volume_size = 10
+    }
   }
 
   tags = {
     Name = "doggo-gpt-backend"
   }
+}
+
+# Create an autoscaling group
+resource "aws_autoscaling_group" "doggo_gpt_asg" {
+  desired_capacity     = 1
+  max_size             = 1
+  min_size             = 1
+  launch_template {
+    id      = aws_launch_template.doggo_gpt_template.id
+    version = "$Latest"
+  }
+
+  vpc_zone_identifier = [aws_subnet.doggo_gpt_subnet.id, aws_subnet.doggo_gpt_subnet_b.id]
+  
+  target_group_arns = [aws_lb_target_group.doggo_gpt_tg.arn]  # Attach the ASG to the target group
+
+  health_check_type = "EC2"
+  health_check_grace_period = 300
+
 }
 
 resource "aws_route53_record" "doggo_gpt_api" {
@@ -199,13 +200,6 @@ resource "aws_lb_target_group" "doggo_gpt_tg" {
   }
 }
 
-# Attach the EC2 instance to the target group
-resource "aws_lb_target_group_attachment" "doggo_gpt_tg_attachment" {
-  target_group_arn = aws_lb_target_group.doggo_gpt_tg.arn
-  target_id        = aws_instance.doggo_gpt_instance.id
-  port             = 80
-}
-
 # Listener
 resource "aws_lb_listener" "doggo_gpt_listener" {
   load_balancer_arn = aws_lb.doggo_gpt_alb.arn
@@ -235,19 +229,4 @@ resource "aws_lb_listener" "http_redirect_listener" {
       status_code = "HTTP_301"
     }
   }
-}
-
-
-# Outputs
-
-# ALB DNS Name
-output "alb_url" {
-  value = "https://${aws_lb.doggo_gpt_alb.dns_name}"
-  description = "The URL for the Application Load Balancer"
-}
-
-# EC2 Instance Public IP with HTTP
-output "instance_url" {
-  value = "http://${aws_instance.doggo_gpt_instance.public_ip}"
-  description = "The URL for the EC2 instance"
 }
