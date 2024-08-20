@@ -135,12 +135,24 @@ resource "aws_autoscaling_group" "doggo_gpt_asg" {
   desired_capacity     = 1
   max_size             = 1
   min_size             = 1
-  launch_template {
-    id      = aws_launch_template.doggo_gpt_template.id
-    version = "$Latest"
-  }
-
+  
   vpc_zone_identifier = [aws_subnet.doggo_gpt_subnet.id, aws_subnet.doggo_gpt_subnet_b.id]
+
+  mixed_instances_policy {
+    launch_template {
+      launch_template_specification {
+        launch_template_id = aws_launch_template.doggo_gpt_template.id
+        version            = "$Latest"
+      }
+
+    }
+
+    instances_distribution {
+      on_demand_base_capacity                  = 0
+      on_demand_percentage_above_base_capacity = 0
+      spot_allocation_strategy                 = "lowest-price"
+    }
+  }
   
   target_group_arns = [aws_lb_target_group.doggo_gpt_tg.arn]  # Attach the ASG to the target group
 
