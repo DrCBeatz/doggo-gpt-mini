@@ -42,3 +42,17 @@ jobs:
 
       - name: Shut down Docker containers
         run: docker compose down
+      
+      - name: Install AWS CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y awscli
+      
+      - name: Deploy to S3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-2
+          S3_BUCKET: doggo-gpt-mini-s3
+        run: |
+          aws s3 sync public/ s3://$S3_BUCKET/ --delete --cache-control "max-age=0, no-cache, no-store, must-revalidate"
