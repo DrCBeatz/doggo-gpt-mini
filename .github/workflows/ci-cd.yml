@@ -1,4 +1,9 @@
-name: CI Workflow
+# .github/workflows/ci-cd.yml
+
+# This workflow will build a docker image, 
+# run tests, and deploy the frontend to S3
+
+name: CI/CD Workflow
 
 on:
   push:
