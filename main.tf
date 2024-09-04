@@ -121,7 +121,7 @@ resource "aws_launch_template" "doggo_gpt_template" {
   block_device_mappings {
     device_name = "/dev/xvda"
     ebs {
-      volume_size = 10
+      volume_size = 12
     }
   }
 
