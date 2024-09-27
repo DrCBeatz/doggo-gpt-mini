@@ -10,21 +10,30 @@
     <script defer src="{{ url_for('static', filename='js/index.js') }}"></script>
 </head>
 <body>
-    <div class="chat__container">
-        <h1 class="chat__title">DoggoGPT-Mini</h1>
-        <h2 class="chat__subtitle">AI-Powered DoggoLingo Translation</h2>
-        <div class="chat__log" id="chat-log">
-        </div>        
-        <form id="chat-form">
-            <select name="direction" class="chat__translation-direction" title="Select translation direction">
-                <option value="eng_to_doggo">English to Doggo</option>
-                <option value="doggo_to_eng">Doggo to English</option>
-            </select>
-            <input type="text" name="message" class="chat__message-box" placeholder="Enter your message..." title="Enter your message here">
-            <button type="submit" class="chat__button" title="Click to submit message for translation">Translate Message</button>
-        </form>
-        <img src="{{ url_for('static', filename='images/bars-rotate-fade.svg') }}" class="chat__spinner" id="spinner" alt="Loading...">
-        <div class="chat__alert" id="chat-alert" role="alert"></div>
-    </div>
+    <main>
+        <div class="chat__container">
+            <header>
+                <h1 class="chat__title">DoggoGPT-Mini</h1>
+                <h2 class="chat__subtitle">AI-Powered DoggoLingo Translation</h2>
+            </header>
+            <section aria-labelledby="chat-section">
+                <div class="chat__log" id="chat-log">
+                </div>        
+                <form id="chat-form">
+                    <select name="direction" class="chat__translation-direction" title="Select translation direction">
+                        <option value="eng_to_doggo">English to Doggo</option>
+                        <option value="doggo_to_eng">Doggo to English</option>
+                    </select>
+                    <input type="text" name="message" class="chat__message-box" placeholder="Enter your message..." title="Enter your message here">
+                    <button type="submit" class="chat__button" title="Click to submit message for translation">Translate Message</button>
+                </form>
+                <img src="{{ url_for('static', filename='images/bars-rotate-fade.svg') }}" class="chat__spinner" id="spinner" alt="Loading...">
+            </section>
+            <footer>
+                <p class="chat__footer">Website by <a href="https://www.drcbeatz.com/" target="_blank">Dr. C Beatz</a> | <a href="https://github.com/DrCBeatz/doggo-gpt-mini/" target="_blank">Github</a></p>
+            </footer>
+            <div class="chat__alert" id="chat-alert" role="alert"></div>
+        </div>
+    </main>
 </body>
 </html>
