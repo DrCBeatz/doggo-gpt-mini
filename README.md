@@ -8,14 +8,6 @@ DoggoGPT-Mini is a translation app that translates between English and DoggoLing
 
 The app also performs context retrieval by searching for English/DoggoLingo terms in a CSV file (`data/doggo_dictionary.csv`) and adds them to the prompt context. The CSV file can be modified to customize the translations.
 
-## Background
-
-After completing my first web application, [Doggo Translate](https://github.com/DrCBeatz/doggo-translate "Doggo Translate"), in 2020 using PHP, I wanted to push the concept further and create an AI-powered DoggoLingo translator. However, I needed more advanced AI to perform translations more effectively.
-
-In mid-2024, I began experimenting with open-source large language models using Ollama and found that Meta’s newly released Llama 3.1 (8 billion parameters) was capable enough for the task. Surprisingly, it ran efficiently even on my 2018 Mac Mini without a GPU, so I decided to deploy it in the cloud using AWS.
-
-Running this app on AWS continuously would have been expensive, so I decided to learn Terraform to automate the creation and destruction of the infrastructure as needed, significantly reducing costs. This also allowed me to scale the app up and down easily, making it accessible whenever I or others wanted to use it.
-
 ## Requirements
 
 - Git
