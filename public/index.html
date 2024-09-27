@@ -1,13 +1,12 @@
-<!--- index.html -->
 <!DOCTYPE html>
 <html>
 <head>
     <title>DoggoGPT-Mini</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
-    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700&display=swap" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script defer src="{{ url_for('static', filename='js/index.js') }}"></script>
+    <script defer src="index.js"></script>
 </head>
 <body>
     <main>
@@ -27,7 +26,7 @@
                     <input type="text" name="message" class="chat__message-box" placeholder="Enter your message..." title="Enter your message here">
                     <button type="submit" class="chat__button" title="Click to submit message for translation">Translate Message</button>
                 </form>
-                <img src="{{ url_for('static', filename='images/bars-rotate-fade.svg') }}" class="chat__spinner" id="spinner" alt="Loading...">
+                <img src="bars-rotate-fade.svg" class="chat__spinner" id="spinner" alt="Loading...">
             </section>
             <footer>
                 <p class="chat__footer">Website by <a href="https://www.drcbeatz.com/" target="_blank">Dr. C Beatz</a> | <a href="https://github.com/DrCBeatz/doggo-gpt-mini/" target="_blank">Github</a></p>
@@ -36,4 +35,5 @@
         </div>
     </main>
 </body>
+
 </html>
