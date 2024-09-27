@@ -1,9 +1,9 @@
-/* static/css/styles.css */
+/* public/styles.css */
 
-@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700&display=swap");
 
 body {
-  font-family: 'Exo 2', sans-serif;
+  font-family: "Exo 2", sans-serif;
   background-color: #121212;
   color: #e0e0e0;
 }
@@ -12,11 +12,25 @@ body.prevent-scroll {
   overflow: hidden;
 }
 
-h1, h2, h3, h4, h5, h6, p, strong, a, input, button, select {
-  font-family: 'Exo 2', sans-serif;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+strong,
+a,
+input,
+button,
+select {
+  font-family: "Exo 2", sans-serif;
 }
 
-input, button, select, div {
+input,
+button,
+select,
+div {
   font-size: 1rem;
 }
 
@@ -89,13 +103,13 @@ h1 {
 
 @keyframes gradientAnimation {
   0% {
-      background-position: 0% 50%;
+    background-position: 0% 50%;
   }
   50% {
-      background-position: 100% 50%;
+    background-position: 100% 50%;
   }
   100% {
-      background-position: 0% 50%;
+    background-position: 0% 50%;
   }
 }
 
@@ -113,14 +127,14 @@ h1 {
   color: #b0b0b0;
 }
 
-
 .chat__log {
   border: 1px solid #444;
   padding: 0px 20px 20px 20px;
   overflow-y: auto;
   white-space: pre-wrap;
   background-color: rgba(0, 0, 0, 0.3); /* Overlay color */
-  background-image: url("/static/images/doggo_gpt_mini.jpg"), linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5));
+  background-image: url("/doggo_gpt_mini.jpg"),
+    linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5));
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
@@ -133,7 +147,7 @@ h1 {
 
 .chat__log p,
 .chat__log hr,
-.chat__log strong{
+.chat__log strong {
   position: relative;
   z-index: 2;
   color: #e0e0e0;
@@ -150,7 +164,8 @@ h1 {
   padding: 10px;
   box-sizing: border-box;
   margin-bottom: 15px;
-  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  transition: background-color 0.3s ease, border-color 0.3s ease,
+    box-shadow 0.3s ease;
   opacity: 0.9;
 }
 
@@ -180,7 +195,8 @@ h1 {
   padding: 10px;
   cursor: pointer;
   box-sizing: border-box;
-  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  transition: background-color 0.3s ease, border-color 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .chat__button:hover {
@@ -267,7 +283,7 @@ footer {
 footer a {
   color: #b0b0b0;
   text-decoration: none;
-  transition: color 0.3s ease
+  transition: color 0.3s ease;
 }
 
 footer a:hover {
