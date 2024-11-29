@@ -1,14 +1,16 @@
 <!-- public/index.html -->
 <!DOCTYPE html>
 <html>
+
 <head>
-    <title>DoggoGPT-Mini</title>
+    <title>DoggoGPT-Mini test</title>
     <link rel="stylesheet" type="text/css" href="styles.css">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700&display=swap" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script defer src="index.js"></script>
 </head>
+
 <body>
     <main>
         <div class="chat__container">
@@ -18,21 +20,22 @@
             </header>
             <section aria-labelledby="chat-section">
                 <div class="chat__log" id="chat-log">
-                </div>        
+                </div>
                 <form id="chat-form">
                     <select name="direction" class="chat__translation-direction" title="Select translation direction">
                         <option value="eng_to_doggo">English to Doggo</option>
                         <option value="doggo_to_eng">Doggo to English</option>
                     </select>
-                    <input type="text" name="message" class="chat__message-box" placeholder="Enter your message..." title="Enter your message here">
-                    <button type="submit" class="chat__button" title="Click to submit message for translation">Translate Message</button>
+                    <input type="text" name="message" class="chat__message-box" placeholder="Enter your message..."
+                        title="Enter your message here">
+                    <button type="submit" class="chat__button" title="Click to submit message for translation">Translate
+                        Message</button>
                 </form>
-                <img src="bars-rotate-fade.svg" class="chat__spinner" id="spinner" alt="Loading...">
             </section>
+            <img src="bars-rotate-fade.svg" class="chat__spinner" id="spinner" alt="Loading...">
             <footer>
-                <p class="chat__footer">Website by <a href="https://www.drcbeatz.com/" target="_blank">Dr. C Beatz</a> | <a href="https://github.com/DrCBeatz/doggo-gpt-mini/" target="_blank">Github</a></p>
+                <div class="chat__alert" id="chat-alert" role="alert"></div>
             </footer>
-            <div class="chat__alert" id="chat-alert" role="alert"></div>
         </div>
     </main>
 </body>
