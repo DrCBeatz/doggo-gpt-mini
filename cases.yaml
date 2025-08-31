@@ -10,3 +10,37 @@ cases:
     expected_regex: "\\bdog\\b"
     not_regex:
       - "\\bdoggo\\b"
+  # Case-insensitive & punctuation
+  - direction: eng_to_doggo
+    message: "HELLO, FRIENDS!!!"
+    expected_contains: "henlo"
+  - direction: eng_to_doggo
+    message: "good human"
+    expected_contains: "gud hooman"
+
+  # Multiple replacements & order
+  - direction: eng_to_doggo
+    message: "I like to drink Pepsi"
+    expected_contains: "drincc"
+    not_regex: ["\\bpepsi\\b"]
+    expected_regex: "\\bbepis\\b"
+
+  # Doggo→Eng fidelity (avoid doggo terms)
+  - direction: doggo_to_eng
+    message: "yos plz fren"
+    expected_regex: "\\byes\\b"
+    not_regex: ["\\bfren\\b","\\byos\\b","\\bplz\\b"]
+
+  # Mixed doggo & english in one line
+  - direction: doggo_to_eng
+    message: "Henlo hooman, I am doggo"
+    expected_regex: "\\bhello\\b"
+    not_regex: ["\\bhenlo\\b","\\bdoggo\\b"]
+
+  # Regression sentinel for no-chatter
+  - direction: eng_to_doggo
+    message: "hello"
+    expected_contains: "henlo"
+    not_regex:
+      - "(?i)as an ai"
+      - "(?i)i cannot"
