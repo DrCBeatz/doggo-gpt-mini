@@ -30,3 +30,5 @@ crash.log
 .aws/
 
 variables.tf
+
+out/

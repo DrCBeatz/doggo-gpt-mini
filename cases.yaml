@@ -1,0 +1,12 @@
+cases:
+  - direction: eng_to_doggo
+    message: "Hello friends!"
+    expected_contains: "Henlo"
+  - direction: eng_to_doggo
+    message: "I like to eat chicken nuggets"
+    expected_contains: "chimken"
+  - direction: doggo_to_eng
+    message: "bork bork I am a doggo"
+    expected_regex: "\\bdog\\b"
+    not_regex:
+      - "\\bdoggo\\b"

@@ -1,0 +1,28 @@
+name: evals
+on:
+  schedule:
+    - cron: '0 13 * * 1'  # Mondays 13:00 UTC
+  workflow_dispatch:
+
+jobs:
+  run-evals:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyyaml
+      - name: Run evals
+        run: |
+          python tools/eval_runner.py --cases tools/cases.yaml --out reports/weekly_eval.md
+      - name: Upload report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly_eval
+          path: reports/weekly_eval.md

@@ -8,6 +8,7 @@ import logging
 from dotenv import load_dotenv
 import csv
 import json
+import time
 
 load_dotenv()
 
@@ -20,6 +21,10 @@ MODEL = os.getenv('MODEL_NAME', 'llama3.1:8b')
 
 PROMPT_INSTRUCTIONS_ENG_TO_DOGGO = """Please translate the following message from English to Doggolingo using the context provided, without any additional text or commentary. Message: """
 PROMPT_INSTRUCTIONS_DOGGO_TO_ENG = """Please translate the following message from Doggolingo to English using the context provided, without any additional text or commentary. Message: """
+
+def log_event(event, **fields):
+    fields['event'] = event
+    print(json.dumps(fields))
 
 def load_doggo_dictionary(file_path):
     doggo_dict = {}
@@ -71,28 +76,26 @@ def index():
 
 @app.route('/chat', methods=['POST'])
 def chat():
+    t0 = time.time()
     user_input = request.form['message'].strip()
     direction = request.form['direction']
-
-    if not user_input:
-        return jsonify({'error': 'Message cannot be empty'}), 400
-
-    if direction not in ['eng_to_doggo', 'doggo_to_eng']:
-        return jsonify({'error': 'Invalid direction'}), 400
-
-    logging.debug(f"User input: {user_input}, Direction: {direction}")
+    if not user_input or direction not in ['eng_to_doggo', 'doggo_to_eng']:
+        log_event('validation_error', direction=direction, empty=not bool(user_input))
+        return jsonify({'error': 'Invalid input'}), 400
     context = update_context(user_input, direction)
-
     try:
-        return ask_question(user_input, context, direction)
+        resp = ask_question(user_input, context, direction)
+        log_event('request_ok',
+                  model=MODEL, direction=direction,
+                  chars=len(user_input), t_ms=int((time.time()-t0)*1000))
+        return resp
     except requests.exceptions.Timeout:
-        # Return a 504 Gateway Timeout if a timeout exception is caught
-        return jsonify({'error': 'The request to the translation service timed out.'}), 504
+        log_event('timeout', model=MODEL, direction=direction)
+        return jsonify({'error': 'Timed out'}), 504
     except requests.exceptions.RequestException as e:
-        logging.error(f"Request failed: {e}")
-        # Handle other potential request errors here
-        return jsonify({'error': 'An error occurred while processing your request.'}), 500
-
+        log_event('upstream_error', model=MODEL, direction=direction, err=str(e))
+        return jsonify({'error': 'Upstream error'}), 500
+    
 def ask_question_json(query, context, direction):
     if direction == "eng_to_doggo":
         prompt_instructions = PROMPT_INSTRUCTIONS_ENG_TO_DOGGO

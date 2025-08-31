@@ -5,3 +5,4 @@ python-dotenv==1.0.1
 pytest==8.3.2
 gunicorn==23.0.0
 Flask-Cors==4.0.1
+PyYAML==6.0.2
