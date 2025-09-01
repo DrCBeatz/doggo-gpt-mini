@@ -1,3 +1,5 @@
+#.githb/workflows/weekly-evals.yml
+
 name: weekly-evals
 
 on:
@@ -11,7 +13,11 @@ jobs:
       max-parallel: 1
       fail-fast: false
       matrix:
-        model: ["llama3.1:8b", "deepseek-r1:1.5b"]
+        include:
+        - model: "llama3.1:8b"
+          max_p95: 20000
+        - model: "deepseek-r1:1.5b"
+          max_p95: 15000
 
     steps:
       - uses: actions/checkout@v4
@@ -30,11 +36,13 @@ jobs:
 
       - name: Run evals
         env:
-          ENDPOINT: https://doggo-gpt-mini-api.com/chat_json
-          MODEL: ${{ matrix.model }}
-          SAFE_MODEL: ${{ steps.names.outputs.safe_model }}
+            ENDPOINT: https://doggo-gpt-mini-api.com/chat_json
+            MODEL: ${{ matrix.model }}
+            SAFE_MODEL: ${{ steps.names.outputs.safe_model }}
         run: |
+            set -e
             mkdir -p out
+            set +e
             python eval_runner.py \
             --cases cases.yaml \
             --out "out/eval-${SAFE_MODEL}.md" \
@@ -43,9 +51,14 @@ jobs:
             --min-pass 0.90 \
             --max-p95 2500 \
             --client-timeout 180
+            status=$?
+            echo "----- EVAL REPORT (eval-${SAFE_MODEL}.md) -----"
+            cat "out/eval-${SAFE_MODEL}.md" || true
+            exit $status
 
       - name: Upload report artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: evals-${{ steps.names.outputs.safe_model }}
-          path: out/eval-${{ steps.names.outputs.safe_model }}.md
+            name: evals-${{ steps.names.outputs.safe_model }}
+            path: out/eval-${{ steps.names.outputs.safe_model }}.md
