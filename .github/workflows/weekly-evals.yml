@@ -8,6 +8,8 @@ jobs:
   evals:
     runs-on: ubuntu-latest
     strategy:
+      max-parallel: 1
+      fail-fast: false
       matrix:
         model: ["llama3.1:8b", "deepseek-r1:1.5b"]
 
