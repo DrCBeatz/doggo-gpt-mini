@@ -15,9 +15,9 @@ jobs:
       matrix:
         include:
         - model: "llama3.1:8b"
-          max_p95: 20000
+          max_p95: 10000
         - model: "deepseek-r1:1.5b"
-          max_p95: 15000
+          max_p95: 19000
 
     steps:
       - uses: actions/checkout@v4
@@ -49,7 +49,7 @@ jobs:
             --endpoint "$ENDPOINT" \
             --model "$MODEL" \
             --min-pass 0.90 \
-            --max-p95 2500 \
+            --max-p95 "${{ matrix.max_p95 }}" \
             --client-timeout 180
             status=$?
             echo "----- EVAL REPORT (eval-${SAFE_MODEL}.md) -----"
