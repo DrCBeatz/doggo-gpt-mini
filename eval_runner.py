@@ -90,20 +90,30 @@ def run_case(endpoint, case, model=None, timeout_s=60):
         payload['model'] = used_model
 
     t0 = time.time()
-    resp = requests.post(
-        endpoint,
-        data=payload,
-        timeout=(15, timeout_s),
-        stream=True
-    )
-    t1 = time.time()
-    body = _read_body(resp, is_sse).strip()
-    ok = (resp.status_code == 200) and _matches_expectations(body, case)
+    try:
+        # Give slow models time to connect and stream
+        resp = requests.post(
+            endpoint,
+            data=payload,
+            timeout=(15, timeout_s),  # (connect, read)
+            stream=True
+        )
+        t1 = time.time()
+        body = _read_body(resp, is_sse).strip()
+        ok = (resp.status_code == 200) and _matches_expectations(body, case)
+        status = resp.status_code
+        got = body[:400]
+    except requests.exceptions.RequestException as e:
+        t1 = time.time()
+        ok = False
+        status = 599  # synthetic error code for client-side/network errors
+        got = (str(e) or "")[:400]
+
     return {
         'ok': ok,
-        'status': resp.status_code,
+        'status': status,
         'latency_ms': int((t1 - t0) * 1000),
-        'got': body[:400],
+        'got': got,
         'expectation': _expectation_summary(case),
         'model': used_model or '(default)',
     }
@@ -152,10 +162,13 @@ def main():
     ap.add_argument('--models', help='Comma-separated list of models to evaluate in a matrix', default=None)
     ap.add_argument('--min-pass', type=float, default=0.0, help='Fail (exit 1) if pass-rate is below this (0.0-1.0)')
     ap.add_argument('--max-p95', type=int, default=None, help='Fail if p95 latency exceeds this (ms)')
+    ap.add_argument(
+        '--client-timeout',
+        type=int,
+        default=int(os.environ.get('DOGGO_CLIENT_TIMEOUT', '180')),
+        help='Read timeout per request (seconds)'
+    )
     args = ap.parse_args()
-    ap.add_argument('--client-timeout', type=int,
-                default=int(os.environ.get('DOGGO_CLIENT_TIMEOUT', '180')),
-                help='Read timeout per request (seconds)')
 
     with open(args.cases) as f:
         data = yaml.safe_load(f)
@@ -163,7 +176,6 @@ def main():
     cases = data['cases']
     failures = 0
 
-    # Multi-model matrix
     if args.models:
         models = [m.strip() for m in args.models.split(',') if m.strip()]
         base_dir = os.path.dirname(args.out) or '.'
@@ -171,16 +183,20 @@ def main():
         ext = ext or '.md'
         for m in models:
             out_path = os.path.join(base_dir, f"{base_name}-{_slug(m)}{ext}")
-            failed = run_suite(cases, endpoint=args.endpoint, model=m,
-                               out_path=out_path, min_pass=args.min_pass,
-                               max_p95=args.max_p95, timeout_s=args.client_timeout)
+            failed = run_suite(
+                cases, endpoint=args.endpoint, model=m,
+                out_path=out_path, min_pass=args.min_pass,
+                max_p95=args.max_p95, timeout_s=args.client_timeout
+            )
             failures += int(failed)
     else:
-        # Single model (or default)
         out_path = args.out
-        failed = run_suite(cases, endpoint=args.endpoint, model=args.model,
-                           out_path=out_path, min_pass=args.min_pass,
-                           max_p95=args.max_p95, timeout_s=args.client_timeout)
+        failed = run_suite(
+            cases, endpoint=args.endpoint, model=args.model,
+            out_path=out_path, min_pass=args.min_pass,
+            max_p95=args.max_p95, timeout_s=args.client_timeout
+        )
+        failures += int(failed)
 
     if failures:
         raise SystemExit(1)
