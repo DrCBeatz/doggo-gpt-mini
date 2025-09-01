@@ -78,7 +78,7 @@ def _expectation_summary(case):
 def _slug(s):
     return re.sub(r'[^A-Za-z0-9._-]+', '-', s)
 
-def run_case(endpoint, case, model=None):
+def run_case(endpoint, case, model=None, timeout_s=60):
     endpoint = _normalize_endpoint(endpoint)
     is_sse = endpoint.endswith("/chat_json")
     payload = {
@@ -93,7 +93,7 @@ def run_case(endpoint, case, model=None):
     resp = requests.post(
         endpoint,
         data=payload,
-        timeout=60,
+        timeout=(15, timeout_s),
         stream=True
     )
     t1 = time.time()
@@ -114,10 +114,10 @@ def _percentile(sorted_ms, p):
     k = max(0, math.ceil(p * len(sorted_ms)) - 1)
     return int(sorted_ms[k])
 
-def run_suite(cases, endpoint, model=None, out_path=None, min_pass=0.0, max_p95=None):
+def run_suite(cases, endpoint, model=None, out_path=None, min_pass=0.0, max_p95=None, timeout_s=60):
     results = []
     for c in cases:
-        r = run_case(endpoint, c, model=model)
+        r = run_case(endpoint, c, model=model, timeout_s=timeout_s)
         results.append({**c, **r})
 
     pass_rate = 100.0 * sum(1 for r in results if r['ok']) / len(results)
@@ -153,6 +153,9 @@ def main():
     ap.add_argument('--min-pass', type=float, default=0.0, help='Fail (exit 1) if pass-rate is below this (0.0-1.0)')
     ap.add_argument('--max-p95', type=int, default=None, help='Fail if p95 latency exceeds this (ms)')
     args = ap.parse_args()
+    ap.add_argument('--client-timeout', type=int,
+                default=int(os.environ.get('DOGGO_CLIENT_TIMEOUT', '180')),
+                help='Read timeout per request (seconds)')
 
     with open(args.cases) as f:
         data = yaml.safe_load(f)
@@ -169,14 +172,15 @@ def main():
         for m in models:
             out_path = os.path.join(base_dir, f"{base_name}-{_slug(m)}{ext}")
             failed = run_suite(cases, endpoint=args.endpoint, model=m,
-                               out_path=out_path, min_pass=args.min_pass, max_p95=args.max_p95)
+                               out_path=out_path, min_pass=args.min_pass,
+                               max_p95=args.max_p95, timeout_s=args.client_timeout)
             failures += int(failed)
     else:
         # Single model (or default)
         out_path = args.out
         failed = run_suite(cases, endpoint=args.endpoint, model=args.model,
-                           out_path=out_path, min_pass=args.min_pass, max_p95=args.max_p95)
-        failures += int(failed)
+                           out_path=out_path, min_pass=args.min_pass,
+                           max_p95=args.max_p95, timeout_s=args.client_timeout)
 
     if failures:
         raise SystemExit(1)

@@ -193,6 +193,7 @@ resource "aws_lb" "doggo_gpt_alb" {
   subnets            = [aws_subnet.doggo_gpt_subnet.id, aws_subnet.doggo_gpt_subnet_b.id]
 
   enable_deletion_protection = false
+  idle_timeout               = 180
 }
 
 # Target Group

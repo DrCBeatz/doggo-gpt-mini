@@ -26,6 +26,8 @@ ALLOWED_DIRECTIONS = {'eng_to_doggo', 'doggo_to_eng'}
 CHUNK_SIZE = int(os.getenv("STREAM_CHUNK_SIZE", "8192"))
 _timeout = os.getenv("UPSTREAM_TIMEOUT", "")
 REQUEST_TIMEOUT = float(_timeout) if _timeout else None
+SSE_HEARTBEAT_SECS = float(os.getenv("SSE_HEARTBEAT_SECS", "10"))
+NDJSON_HEARTBEAT_SECS = float(os.getenv("NDJSON_HEARTBEAT_SECS", "10"))
 
 PROMPT_INSTRUCTIONS_ENG_TO_DOGGO = """Please translate the following message from English to Doggolingo using the context provided, without any additional text or commentary. Message: """
 PROMPT_INSTRUCTIONS_DOGGO_TO_ENG = """Please translate the following message from Doggolingo to English using the context provided, without any additional text or commentary. Message: """
@@ -179,12 +181,15 @@ def ask_question(query: str, context: str, direction: str, model: str) -> Respon
             response.raise_for_status()
 
         buf = ""
+        last_emit = time.time()
+        HB = NDJSON_HEARTBEAT_SECS
+
         for chunk in response.iter_content(chunk_size=CHUNK_SIZE):
             if not chunk:
                 continue
             buf += chunk.decode("utf-8", errors="ignore")
 
-            # Upstream is NDJSON. Emit full lines as soon as we have them.
+            # Emit full NDJSON lines as we receive them
             while True:
                 nl = buf.find("\n")
                 if nl == -1:
@@ -192,53 +197,69 @@ def ask_question(query: str, context: str, direction: str, model: str) -> Respon
                 line = buf[:nl]
                 buf = buf[nl + 1:]
 
+                now = time.time()
+
+                # Try parse upstream NDJSON
                 try:
                     obj = json.loads(line)
                 except json.JSONDecodeError:
-                    # Fallback: strip tags in raw text line if needed
+                    # Not JSON (rare). If filtering, strip think tags; else pass through.
                     if use_filter:
                         cleaned = re.sub(r"(?is)<think>.*?</think>", "", line)
-                        yield cleaned + "\n"
+                        if cleaned.strip():
+                            yield cleaned + "\n"
+                            last_emit = now
+                        elif now - last_emit >= HB:
+                            yield '{"keepalive": true}\n'
+                            last_emit = now
                     else:
                         yield line + "\n"
+                        last_emit = now
                     continue
 
                 content = (obj.get("message") or {}).get("content", "")
                 wrote = False
 
                 if content:
-                    if use_filter:
-                        cleaned = think.feed(content)
-                    else:
-                        cleaned = content
-
+                    cleaned = think.feed(content) if use_filter else content
                     if cleaned:
                         obj["message"]["content"] = cleaned
                         yield json.dumps(obj) + "\n"
+                        last_emit = now
                         wrote = True
 
-                # Flush any remaining (non-think) tail right before 'done: true'
-                if obj.get("done") is True and use_filter:
-                    tail = think.flush()
-                    if tail:
-                        extra = {
-                            "model": obj.get("model"),
-                            "message": {"role": "assistant", "content": tail},
-                            "done": False,
-                        }
-                        yield json.dumps(extra) + "\n"
+                # Finish stream: flush any safe tail just before 'done: true'
+                if obj.get("done") is True:
+                    if use_filter:
+                        tail = think.flush()
+                        if tail:
+                            extra = {
+                                "model": obj.get("model"),
+                                "message": {"role": "assistant", "content": tail},
+                                "done": False,
+                            }
+                            yield json.dumps(extra) + "\n"
+                            last_emit = now
                     yield json.dumps(obj) + "\n"
+                    last_emit = now
                     wrote = True
 
+                # If nothing to forward and we’re stripping, send a keepalive instead of leaking <think>
                 if not wrote:
-                    yield json.dumps(obj) + "\n"
+                    if use_filter:
+                        if now - last_emit >= HB:
+                            yield '{"keepalive": true}\n'
+                            last_emit = now
+                    else:
+                        # Non‑reasoning models: just pass through
+                        yield json.dumps(obj) + "\n"
+                        last_emit = now
 
-        # Stream ended. If we still have safe tail (no 'done' line seen), emit it.
+        # Stream ended: flush any safe tail if filtering
         if use_filter:
             tail = think.flush()
             if tail:
-                extra = {"message": {"role": "assistant", "content": tail}, "done": False}
-                yield json.dumps(extra) + "\n"
+                yield json.dumps({"message": {"role": "assistant", "content": tail}, "done": False}) + "\n"
 
     return Response(generate(), content_type="text/plain")
 
@@ -277,27 +298,53 @@ def ask_question_json(query: str, context: str, direction: str, model: str) -> R
     think = ThinkStripper() if use_filter else None
 
     def generate():
-        if response.status_code == 200:
-            for line in response.iter_lines():
-                if not line:
-                    continue
-                try:
-                    data = json.loads(line)
-                except json.JSONDecodeError:
-                    continue
+        if response.status_code != 200:
+            response.raise_for_status()
 
-                msg = (data.get("message") or {}).get("content", "")
-                if msg:
-                    cleaned = think.feed(msg) if use_filter else msg
-                    if cleaned:
-                        yield f"data: {json.dumps({'content': cleaned})}\n\n"
+        last_emit = time.time()
+        HB = SSE_HEARTBEAT_SECS
 
-                if data.get("done") is True and use_filter:
+        for raw in response.iter_lines():
+            if not raw:
+                # No line right now; if filtering and we've been quiet, send a heartbeat
+                now = time.time()
+                if use_filter and (now - last_emit >= HB):
+                    yield f"data: {json.dumps({'event': 'keepalive'})}\n\n"
+                    last_emit = now
+                continue
+
+            now = time.time()
+            try:
+                data = json.loads(raw)
+            except json.JSONDecodeError:
+                # Silently ignore non‑JSON lines, but keep the connection alive if needed
+                if use_filter and (now - last_emit >= HB):
+                    yield f"data: {json.dumps({'event': 'keepalive'})}\n\n"
+                    last_emit = now
+                continue
+
+            msg = (data.get("message") or {}).get("content", "")
+            emitted = False
+
+            if msg:
+                cleaned = think.feed(msg) if use_filter else msg
+                if cleaned:
+                    yield f"data: {json.dumps({'content': cleaned})}\n\n"
+                    last_emit = now
+                    emitted = True
+
+            # If we didn’t emit due to stripping, send a heartbeat occasionally
+            if use_filter and not emitted and (now - last_emit >= HB):
+                yield f"data: {json.dumps({'event': 'keepalive'})}\n\n"
+                last_emit = now
+
+            if data.get("done") is True:
+                if use_filter:
                     tail = think.flush()
                     if tail:
                         yield f"data: {json.dumps({'content': tail})}\n\n"
-        else:
-            response.raise_for_status()
+                # end the SSE stream
+                break
 
     return Response(generate(), content_type="text/event-stream")
 

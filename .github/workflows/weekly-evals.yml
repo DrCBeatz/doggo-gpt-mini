@@ -32,14 +32,15 @@ jobs:
           MODEL: ${{ matrix.model }}
           SAFE_MODEL: ${{ steps.names.outputs.safe_model }}
         run: |
-          mkdir -p out
-          python eval_runner.py \
+            mkdir -p out
+            python eval_runner.py \
             --cases cases.yaml \
             --out "out/eval-${SAFE_MODEL}.md" \
             --endpoint "$ENDPOINT" \
             --model "$MODEL" \
             --min-pass 0.90 \
-            --max-p95 2500
+            --max-p95 2500 \
+            --client-timeout 180
 
       - name: Upload report artifact
         uses: actions/upload-artifact@v4
