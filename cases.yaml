@@ -44,3 +44,4 @@ cases:
     not_regex:
       - "(?i)as an ai"
       - "(?i)i cannot"
+
