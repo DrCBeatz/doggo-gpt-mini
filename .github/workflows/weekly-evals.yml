@@ -1,0 +1,58 @@
+# .github/workflows/weekly-evals.yml
+name: weekly-evals
+
+on:
+  schedule: [{ cron: "0 9 * * 1" }]   # Mondays 09:00 UTC
+  workflow_dispatch:
+
+jobs:
+  evals:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        # Pick models that your backend allows (see ALLOWED_MODELS).
+        model: ["llama3.1:8b", "deepseek-r1:1.5b"]
+    env:
+      API_BASE: https://doggo-gpt-mini-api.com
+      ENDPOINT: https://doggo-gpt-mini-api.com/chat_json
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install eval deps
+        run: python -m pip install --upgrade pip && pip install requests PyYAML
+
+      - name: Smoke test - health
+        run: curl -fsS "$API_BASE/health"
+
+      - name: Smoke test - POST /chat_json (warm selected model)
+        run: |
+          set -e
+          echo "Warming model: ${{ matrix.model }}"
+          # Warm call (does not fail the job if upstream is briefly loading)
+          curl -sS -X POST "$ENDPOINT" \
+            -H 'Content-Type: application/x-www-form-urlencoded' \
+            --data-urlencode "message=hello" \
+            --data-urlencode "direction=eng_to_doggo" \
+            --data-urlencode "model=${{ matrix.model }}" | head -n 5 || true
+
+      - name: Run evals
+        run: |
+          mkdir -p out
+          SAFE_MODEL="$(printf '%s' "${{ matrix.model }}" | tr ':/ ' '-')"
+          python eval_runner.py \
+            --cases cases.yaml \
+            --out "out/eval-${SAFE_MODEL}.md" \
+            --endpoint "$ENDPOINT" \
+            --model "${{ matrix.model }}" \
+            --min-pass 0.90 \
+            --max-p95 2500
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: evals-${{ matrix.model }}
+          path: out/*.md
