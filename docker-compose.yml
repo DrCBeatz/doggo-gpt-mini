@@ -1,5 +1,3 @@
-# docker-compose.yml
-
 services:
   flask-app:
     build: .
@@ -8,6 +6,8 @@ services:
     environment:
       - OLLAMA_API_URL=http://ollama:11434
       - MODEL_NAME=llama3.1:8b
+      - ALLOWED_MODELS=llama3.1:8b,deepseek-r1:1.5b
+      - THINK_TAG_MODELS=deepseek-r1:1.5b
     depends_on:
       - ollama
 

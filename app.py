@@ -21,9 +21,9 @@ logging.basicConfig(level=logging.DEBUG)
 
 OLLAMA_API_URL = os.getenv('OLLAMA_API_URL', 'http://ollama:11434')
 MODEL = os.getenv('MODEL_NAME', 'llama3.1:8b')
+ALLOWED_MODELS = {m.strip() for m in (os.getenv('ALLOWED_MODELS') or MODEL).split(',') if m.strip()}
 ALLOWED_DIRECTIONS = {'eng_to_doggo', 'doggo_to_eng'}
 CHUNK_SIZE = int(os.getenv("STREAM_CHUNK_SIZE", "8192"))
-# Keep default behavior (no timeout) unless explicitly set:
 _timeout = os.getenv("UPSTREAM_TIMEOUT", "")
 REQUEST_TIMEOUT = float(_timeout) if _timeout else None
 
@@ -38,6 +38,68 @@ OLLAMA_OPTIONS = {
     "seed": int(os.getenv("OLLAMA_SEED", "42")),
 }
 
+THINK_TAG_MODELS = {
+    m.strip().lower()
+    for m in (os.getenv("THINK_TAG_MODELS", "deepseek-r1:1.5b").split(","))
+    if m.strip()
+}
+
+class ThinkStripper:
+    """
+    Streaming remover for <think>...</think> blocks that may span chunks.
+    Keeps a small boundary 'tail' so it catches tags split across chunk edges.
+    """
+    OPEN = "<think>"
+    CLOSE = "</think>"
+
+    def __init__(self):
+        self.in_think = False
+        self.tail = ""   # carry-over for partial tag boundaries
+
+    def feed(self, piece: str) -> str:
+        s = self.tail + (piece or "")
+        self.tail = ""
+        out = []
+        i = 0
+        lo = s.lower()
+
+        while True:
+            if self.in_think:
+                j = lo.find(self.CLOSE, i)
+                if j == -1:
+                    # Still inside <think>; keep only a small tail to catch a future </think>
+                    keep = max(0, len(s) - (len(self.CLOSE) - 1))
+                    self.tail = s[keep:]
+                    return "".join(out)
+                # skip closing tag
+                i = j + len(self.CLOSE)
+                self.in_think = False
+                lo = s.lower()
+            else:
+                j = lo.find(self.OPEN, i)
+                if j == -1:
+                    # Output remainder, but hold a small tail to catch a future "<think"
+                    rem = s[i:]
+                    need = len(self.OPEN) - 1  # 6 chars
+                    if len(rem) > need:
+                        out.append(rem[:-need])
+                        self.tail = rem[-need:]
+                    else:
+                        # too short; carry it entirely to next call
+                        self.tail = rem
+                    return "".join(out)
+                out.append(s[i:j])            # output up to <think>
+                i = j + len(self.OPEN)        # enter think mode
+                self.in_think = True
+
+    def flush(self) -> str:
+        # On stream end, emit any safe tail only if we're not inside a <think> block
+        if not self.in_think and self.tail:
+            out = self.tail
+            self.tail = ""
+            return out
+        self.tail = ""
+        return ""
 
 def compose_prompt(query: str, context: str, direction: str) -> str:
     ctx = context.replace("Context: ", "").strip()
@@ -65,7 +127,6 @@ def load_doggo_dictionaries(file_path: str) -> Tuple[Dict[str, str], Dict[str, s
         for english, doggo in reader:
             e = english.strip().lower()
             d = doggo.strip().lower()
-            # keep first occurrence to avoid CSV duplicates overriding
             en2dog.setdefault(e, d)
             dog2en.setdefault(d, e)
     return en2dog, dog2en
@@ -79,7 +140,6 @@ def load_doggo_dictionary(file_path):
     en2dog, dog2en = load_doggo_dictionaries(file_path)
     merged = {}
     merged.update(en2dog)
-    # merge reverse direction too so tests can assert both ways
     for k, v in dog2en.items():
         merged[k] = v
     return merged
@@ -109,18 +169,78 @@ def _ollama_post(prompt: str, model: str):
     )
 
 
-def ask_question(query: str, context: str, direction: str) -> Response:
-    response = _ollama_post(compose_prompt(query, context, direction), MODEL)
+def ask_question(query: str, context: str, direction: str, model: str) -> Response:
+    response = _ollama_post(compose_prompt(query, context, direction), model)
+    use_filter = model.lower() in THINK_TAG_MODELS
+    think = ThinkStripper() if use_filter else None
 
     def generate():
+        if response.status_code != 200:
+            response.raise_for_status()
+
+        buf = ""
         for chunk in response.iter_content(chunk_size=CHUNK_SIZE):
-            if chunk:
-                chunk_str = chunk.decode('utf-8')
-                logging.debug(f"Chunk: {chunk_str}")
-                yield chunk_str
+            if not chunk:
+                continue
+            buf += chunk.decode("utf-8", errors="ignore")
 
-    return Response(generate(), content_type='text/plain')
+            # Upstream is NDJSON. Emit full lines as soon as we have them.
+            while True:
+                nl = buf.find("\n")
+                if nl == -1:
+                    break
+                line = buf[:nl]
+                buf = buf[nl + 1:]
 
+                try:
+                    obj = json.loads(line)
+                except json.JSONDecodeError:
+                    # Fallback: strip tags in raw text line if needed
+                    if use_filter:
+                        cleaned = re.sub(r"(?is)<think>.*?</think>", "", line)
+                        yield cleaned + "\n"
+                    else:
+                        yield line + "\n"
+                    continue
+
+                content = (obj.get("message") or {}).get("content", "")
+                wrote = False
+
+                if content:
+                    if use_filter:
+                        cleaned = think.feed(content)
+                    else:
+                        cleaned = content
+
+                    if cleaned:
+                        obj["message"]["content"] = cleaned
+                        yield json.dumps(obj) + "\n"
+                        wrote = True
+
+                # Flush any remaining (non-think) tail right before 'done: true'
+                if obj.get("done") is True and use_filter:
+                    tail = think.flush()
+                    if tail:
+                        extra = {
+                            "model": obj.get("model"),
+                            "message": {"role": "assistant", "content": tail},
+                            "done": False,
+                        }
+                        yield json.dumps(extra) + "\n"
+                    yield json.dumps(obj) + "\n"
+                    wrote = True
+
+                if not wrote:
+                    yield json.dumps(obj) + "\n"
+
+        # Stream ended. If we still have safe tail (no 'done' line seen), emit it.
+        if use_filter:
+            tail = think.flush()
+            if tail:
+                extra = {"message": {"role": "assistant", "content": tail}, "done": False}
+                yield json.dumps(extra) + "\n"
+
+    return Response(generate(), content_type="text/plain")
 
 @app.route('/')
 def index():
@@ -132,63 +252,73 @@ def chat():
     t0 = time.time()
     user_input = request.form['message'].strip()
     direction = request.form['direction']
-    if not user_input or direction not in ALLOWED_DIRECTIONS:
-        log_event('validation_error', direction=direction, empty=not bool(user_input))
+    model = request.form.get('model', MODEL)
+    if not user_input or direction not in ALLOWED_DIRECTIONS or model not in ALLOWED_MODELS:
+        log_event('validation_error', direction=direction, model=model, empty=not bool(user_input))
         return jsonify({'error': 'Invalid input'}), 400
     context = update_context(user_input, direction)
     try:
-        resp = ask_question(user_input, context, direction)
+        resp = ask_question(user_input, context, direction, model)
         log_event('request_ok',
-                  model=MODEL, direction=direction,
+                  model=model, direction=direction,
                   chars=len(user_input), t_ms=int((time.time() - t0) * 1000))
         return resp
     except requests.exceptions.Timeout:
-        log_event('timeout', model=MODEL, direction=direction)
+        log_event('timeout', model=model, direction=direction)
         return jsonify({'error': 'Timed out'}), 504
     except requests.exceptions.RequestException as e:
-        log_event('upstream_error', model=MODEL, direction=direction, err=str(e))
+        log_event('upstream_error', model=model, direction=direction, err=str(e))
         return jsonify({'error': 'Upstream error'}), 500
 
 
-def ask_question_json(query: str, context: str, direction: str) -> Response:
-    response = _ollama_post(compose_prompt(query, context, direction), MODEL)
+def ask_question_json(query: str, context: str, direction: str, model: str) -> Response:
+    response = _ollama_post(compose_prompt(query, context, direction), model)
+    use_filter = model.lower() in THINK_TAG_MODELS
+    think = ThinkStripper() if use_filter else None
 
     def generate():
         if response.status_code == 200:
             for line in response.iter_lines():
-                if line:
-                    try:
-                        data = json.loads(line)
-                        logging.debug(f"Parsed data: {data}")
-                        message_content = data.get('message', {}).get('content', '')
-                        if message_content:
-                            yield f"data: {json.dumps({'content': message_content})}\n\n"
-                    except json.JSONDecodeError as e:
-                        logging.error(f"JSON decode error: {e}")
-                        continue  # Skip lines that aren't valid JSON
+                if not line:
+                    continue
+                try:
+                    data = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+
+                msg = (data.get("message") or {}).get("content", "")
+                if msg:
+                    cleaned = think.feed(msg) if use_filter else msg
+                    if cleaned:
+                        yield f"data: {json.dumps({'content': cleaned})}\n\n"
+
+                if data.get("done") is True and use_filter:
+                    tail = think.flush()
+                    if tail:
+                        yield f"data: {json.dumps({'content': tail})}\n\n"
         else:
             response.raise_for_status()
 
-    return Response(generate(), content_type='text/event-stream')
-
+    return Response(generate(), content_type="text/event-stream")
 
 @app.route('/chat_json', methods=['POST'])
 def chat_json():
     user_input = request.form['message'].strip()
     direction = request.form['direction']
+    model = request.form.get('model', MODEL)
 
     if not user_input:
         return jsonify({'error': 'Message cannot be empty'}), 400
-
     if direction not in ALLOWED_DIRECTIONS:
         return jsonify({'error': 'Invalid direction'}), 400
+    if model not in ALLOWED_MODELS:
+        return jsonify({'error': 'Model not allowed'}), 400
 
-    logging.debug(f"User input: {user_input}, Direction: {direction}")
+    logging.debug(f"User input: {user_input}, Direction: {direction}, Model: {model}")
     context = update_context(user_input, direction)
 
     try:
-        # Directly return the streaming response
-        return ask_question_json(user_input, context, direction)
+        return ask_question_json(user_input, context, direction, model)
     except requests.exceptions.Timeout:
         return jsonify({'error': 'The request to the translation service timed out.'}), 504
     except requests.exceptions.RequestException as e:
