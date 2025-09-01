@@ -11,6 +11,7 @@ from app import (
 from unittest.mock import patch
 import csv
 import requests
+import json
 
 @pytest.fixture
 def client():
@@ -18,16 +19,40 @@ def client():
         yield client
 
 def mock_requests_post(*args, **kwargs):
+    # Simulate Ollama NDJSON streaming:
+    lines = [
+        json.dumps({
+            "model": "mock-llm",
+            "message": {"role": "assistant", "content": "Woof woof"},
+            "done": False
+        }),
+        json.dumps({"done": True})
+    ]
+
     class MockResponse:
-        def __init__(self, content):
-            self.content = content
-        
+        def __init__(self, lines):
+            self._lines = lines
+            self.status_code = 200
+
+        # /chat path uses iter_content and we parse line by line on '\n'
         def iter_content(self, chunk_size=8192):
-            yield self.content
-        
-        def json(self):
-            return {"message": {"content": "Woof woof"}}
-    return MockResponse(b'{{"message": {"content": "Woof woof"}}}')
+            for ln in self._lines:
+                yield (ln + "\n").encode("utf-8")
+
+        # /chat_json path uses iter_lines; keep it realistic
+        def iter_lines(self, decode_unicode=False):
+            for ln in self._lines:
+                b = (ln + "\n").encode("utf-8")
+                if decode_unicode:
+                    yield b.decode("utf-8")
+                else:
+                    yield b
+
+        def raise_for_status(self):
+            if self.status_code != 200:
+                raise requests.HTTPError(f"HTTP {self.status_code}")
+
+    return MockResponse(lines)
 
 def test_index_route(client):
     response = client.get('/')
