@@ -21,4 +21,4 @@ COPY . /app/
 EXPOSE 80 443
 
 # Command to run the Flask app
-CMD ["gunicorn", "-b", "0.0.0.0:80", "--timeout", "300", "--access-logfile", "-", "--worker-class","gthread", "--workers", "2", "--threads", "8", "app:app"]
+CMD ["gunicorn", "-b", "0.0.0.0:80", "--timeout", "300", "--access-logfile", "-", "--worker-class","gthread", "--workers", "1", "--threads", "8", "app:app"]

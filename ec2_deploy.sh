@@ -37,3 +37,6 @@ docker-compose up -d --build
 
 # Pull the Llama 3.1 8b model for the application using Ollama
 docker-compose exec ollama ollama pull llama3.1:8b
+
+# Pull the DeepSeek-R1 1.5b model for the weekly evals workflow
+docker-compose exec ollama ollama pull deepseek-r1:1.5b

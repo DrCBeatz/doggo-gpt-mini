@@ -45,6 +45,16 @@ jobs:
           OLLAMA_API_URL: http://ollama:11434
           MODEL_NAME: llama3.1:8b
 
+      - name: Smoke test metrics endpoint
+        run: |
+          docker compose exec -T flask-app sh -lc \
+            "curl -s -X POST http://localhost/chat_json \
+              -d 'message=hi' -d 'direction=eng_to_doggo' \
+              -d 'model=${MODEL_NAME:-llama3.1:8b}' >/dev/null || true"
+
+          docker compose exec -T flask-app sh -lc \
+            "curl -s http://localhost/metrics | grep -E '^(doggo_requests_total|doggo_request_latency_seconds_count)'"
+
       - name: Shut down Docker containers
         run: docker compose down
       

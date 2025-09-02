@@ -8,7 +8,9 @@ import json
 import logging
 import os
 import re
+import uuid
 import time
+from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
 from typing import Dict, Tuple
 
 import requests
@@ -45,6 +47,38 @@ THINK_TAG_MODELS = {
     for m in (os.getenv("THINK_TAG_MODELS", "deepseek-r1:1.5b").split(","))
     if m.strip()
 }
+
+REQS = Counter(
+    'doggo_requests_total', 'Total requests',
+    ['route', 'model', 'direction', 'outcome']
+)
+LAT = Histogram(
+    'doggo_request_latency_seconds', 'Request latency (s)',
+    ['route', 'model', 'direction'],
+    buckets=(0.05,0.1,0.2,0.4,0.8,1.6,3.2,6.4,12.8,25.6)
+)
+UP_TIMEOUTS = Counter('doggo_upstream_timeouts_total', 'Upstream timeouts', ['model'])
+UP_ERRORS   = Counter('doggo_upstream_errors_total', 'Upstream errors',   ['model'])
+GUARDRAILS  = Counter('doggo_guardrail_actions_total','Guardrail actions',['action'])
+
+@app.before_request
+def assign_request_id():
+    rid = request.headers.get('X-Request-ID') or uuid.uuid4().hex[:12]
+    request.request_id = rid
+
+@app.route('/metrics', methods=['GET'])
+def metrics():
+    # Optional shared-secret to avoid exposing metrics publicly
+    key = os.getenv('METRICS_KEY', '')
+    if key and request.args.get('k') != key:
+        return "Forbidden", 403
+    return Response(generate_latest(), mimetype=CONTENT_TYPE_LATEST)
+
+# make log_event include the request id
+def log_event(event: str, **fields) -> None:
+    fields['event'] = event
+    fields.setdefault('rid', getattr(request, 'request_id', None))
+    print(json.dumps(fields))
 
 class ThinkStripper:
     """
@@ -114,11 +148,6 @@ def compose_prompt(query: str, context: str, direction: str) -> str:
 Context: {ctx}
 Input: {query}
 Output:"""
-
-
-def log_event(event: str, **fields) -> None:
-    fields['event'] = event
-    print(json.dumps(fields))
 
 
 def load_doggo_dictionaries(file_path: str) -> Tuple[Dict[str, str], Dict[str, str]]:
@@ -271,6 +300,7 @@ def index():
 @app.route('/chat', methods=['POST'])
 def chat():
     t0 = time.time()
+    outcome = 'ok'
     user_input = request.form['message'].strip()
     direction = request.form['direction']
     model = request.form.get('model', MODEL)
@@ -278,6 +308,7 @@ def chat():
         log_event('validation_error', direction=direction, model=model, empty=not bool(user_input))
         return jsonify({'error': 'Invalid input'}), 400
     context = update_context(user_input, direction)
+    route, mdl = '/chat', model
     try:
         resp = ask_question(user_input, context, direction, model)
         log_event('request_ok',
@@ -285,12 +316,18 @@ def chat():
                   chars=len(user_input), t_ms=int((time.time() - t0) * 1000))
         return resp
     except requests.exceptions.Timeout:
+        outcome = 'timeout'
+        UP_TIMEOUTS.labels(mdl).inc()
         log_event('timeout', model=model, direction=direction)
         return jsonify({'error': 'Timed out'}), 504
     except requests.exceptions.RequestException as e:
+        outcome = 'upstream_error'
+        UP_ERRORS.labels(mdl).inc()
         log_event('upstream_error', model=model, direction=direction, err=str(e))
         return jsonify({'error': 'Upstream error'}), 500
-
+    finally:
+        LAT.labels(route, mdl, direction).observe(time.time() - t0)
+        REQS.labels(route, mdl, direction, outcome).inc()
 
 def ask_question_json(query: str, context: str, direction: str, model: str) -> Response:
     response = _ollama_post(compose_prompt(query, context, direction), model)
@@ -348,31 +385,92 @@ def ask_question_json(query: str, context: str, direction: str, model: str) -> R
 
     return Response(generate(), content_type="text/event-stream")
 
+# @app.route('/chat_json', methods=['POST'])
+# def chat_json():
+#     t0 = time.time()
+#     user_input = request.form['message'].strip()
+#     direction = request.form['direction']
+#     model = request.form.get('model', MODEL)
+
+#     if not user_input:
+#         return jsonify({'error': 'Message cannot be empty'}), 400
+#     if direction not in ALLOWED_DIRECTIONS:
+#         return jsonify({'error': 'Invalid direction'}), 400
+#     if model not in ALLOWED_MODELS:
+#         return jsonify({'error': 'Model not allowed'}), 400
+
+#     logging.debug(f"User input: {user_input}, Direction: {direction}, Model: {model}")
+#     context = update_context(user_input, direction)
+
+#     try:
+#         return ask_question_json(user_input, context, direction, model)
+#     except requests.exceptions.Timeout:
+#         return jsonify({'error': 'The request to the translation service timed out.'}), 504
+#     except requests.exceptions.RequestException as e:
+#         logging.error(f"Request failed: {e}")
+#         return jsonify({'error': 'An error occurred while processing your request.'}), 500
+
+def deterministic_translate(user_input: str, direction: str) -> str:
+    """Dictionary-based best-effort translation used for reliability fallback."""
+    mapping = EN2DOG if direction == 'eng_to_doggo' else DOG2EN
+    token_rx = re.compile(r"\b\w+\b", re.UNICODE)
+
+    def repl(m):
+        w = m.group(0)
+        return mapping.get(w.lower(), w)
+
+    return token_rx.sub(repl, user_input)
+
+
+def stream_fallback_ndjson(answer: str, model: str = 'dictionary-fallback') -> Response:
+    """NDJSON streaming shape for the /chat endpoint fallback."""
+    def gen():
+        yield json.dumps({
+            "model": model,
+            "message": {"role": "assistant", "content": answer},
+            "done": False
+        }) + "\n"
+        yield json.dumps({"done": True}) + "\n"
+    return Response(gen(), content_type="text/plain")
+
+
+def stream_fallback_sse(answer: str) -> Response:
+    """SSE streaming shape for the /chat_json endpoint fallback."""
+    def gen():
+        yield f"data: {json.dumps({'content': answer})}\n\n"
+    return Response(gen(), content_type="text/event-stream")
+
 @app.route('/chat_json', methods=['POST'])
 def chat_json():
+    t0 = time.time()
     user_input = request.form['message'].strip()
     direction = request.form['direction']
     model = request.form.get('model', MODEL)
 
-    if not user_input:
-        return jsonify({'error': 'Message cannot be empty'}), 400
-    if direction not in ALLOWED_DIRECTIONS:
-        return jsonify({'error': 'Invalid direction'}), 400
-    if model not in ALLOWED_MODELS:
-        return jsonify({'error': 'Model not allowed'}), 400
-
-    logging.debug(f"User input: {user_input}, Direction: {direction}, Model: {model}")
-    context = update_context(user_input, direction)
+    # basic validation
+    if not user_input or direction not in ALLOWED_DIRECTIONS or model not in ALLOWED_MODELS:
+        # record validation outcome
+        try:
+            REQS.labels('/chat_json', model, direction, 'validation_error').inc()
+        except Exception:
+            pass
+        return jsonify({'error': 'Invalid input'}), 400
 
     try:
-        return ask_question_json(user_input, context, direction, model)
+        resp = ask_question_json(user_input, update_context(user_input, direction), direction, model)
+        # <-- record success
+        LAT.labels('/chat_json', model, direction).observe(time.time() - t0)
+        REQS.labels('/chat_json', model, direction, 'ok').inc()
+        return resp
     except requests.exceptions.Timeout:
-        return jsonify({'error': 'The request to the translation service timed out.'}), 504
-    except requests.exceptions.RequestException as e:
-        logging.error(f"Request failed: {e}")
-        return jsonify({'error': 'An error occurred while processing your request.'}), 500
-
-
+        UP_TIMEOUTS.labels(model).inc()
+        REQS.labels('/chat_json', model, direction, 'timeout_fallback').inc()
+        return stream_fallback_sse(deterministic_translate(user_input, direction))
+    except requests.exceptions.RequestException:
+        UP_ERRORS.labels(model).inc()
+        REQS.labels('/chat_json', model, direction, 'upstream_fallback').inc()
+        return stream_fallback_sse(deterministic_translate(user_input, direction))
+    
 @app.route('/health', methods=['GET'])
 def health_check():
     return "OK", 200
