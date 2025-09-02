@@ -47,13 +47,20 @@ jobs:
 
       - name: Smoke test metrics endpoint
         run: |
-          docker compose exec -T flask-app sh -lc \
-            "curl -s -X POST http://localhost/chat_json \
-              -d 'message=hi' -d 'direction=eng_to_doggo' \
-              -d 'model=${MODEL_NAME:-llama3.1:8b}' >/dev/null || true"
+          # Wait until the app is up
+          for i in {1..30}; do
+            curl -sf http://localhost/health >/dev/null && break
+            sleep 1
+          done
 
-          docker compose exec -T flask-app sh -lc \
-            "curl -s http://localhost/metrics | grep -E '^(doggo_requests_total|doggo_request_latency_seconds_count)'"
+          # Warm with a real request so doggo_* series exist
+          curl -s -X POST http://localhost/chat_json \
+            -d 'message=hi' \
+            -d 'direction=eng_to_doggo' \
+            -d "model=${MODEL_NAME:-llama3.1:8b}" >/dev/null || true
+
+          # Assert custom metrics are present
+          curl -s http://localhost/metrics | grep -E '^(doggo_requests_total|doggo_request_latency_seconds_count)'
 
       - name: Shut down Docker containers
         run: docker compose down
