@@ -119,7 +119,8 @@ def test_update_context_case_insensitive():
 def test_chat_route_timeout(mock_post, client):
     mock_post.side_effect = requests.exceptions.Timeout
     response = client.post('/chat', data={'message': 'Hello', 'direction': 'eng_to_doggo'})
-    assert response.status_code == 504
+    assert response.status_code == 200
+    assert b'dictionary-fallback' in response.data
 
 def test_favicon_served(client):
     response = client.get('/static/favicon.ico')
