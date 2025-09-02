@@ -1,9 +1,7 @@
-#.githb/workflows/weekly-evals.yml
-
 name: weekly-evals
 
 on:
-  schedule: [{ cron: "0 9 * * 1" }]   # Mondays 09:00 UTC
+  schedule: [{ cron: "0 3 * * 2" }]   # Tuesdays 03:00 UTC
   workflow_dispatch:
 
 jobs:
@@ -27,7 +25,6 @@ jobs:
         shell: bash
         run: |
           RAW="${{ matrix.model }}"
-          # Replace characters disallowed in artifact/file names with '-'
           SAFE="${RAW//[:\/\\\"<>|*? ]/-}"
           echo "safe_model=$SAFE" >> "$GITHUB_OUTPUT"
 
@@ -36,14 +33,14 @@ jobs:
 
       - name: Run evals
         env:
-            ENDPOINT: https://doggo-gpt-mini-api.com/chat_json
-            MODEL: ${{ matrix.model }}
-            SAFE_MODEL: ${{ steps.names.outputs.safe_model }}
+          ENDPOINT: https://doggo-gpt-mini-api.com/chat_json
+          MODEL: ${{ matrix.model }}
+          SAFE_MODEL: ${{ steps.names.outputs.safe_model }}
         run: |
-            set -e
-            mkdir -p out
-            set +e
-            python eval_runner.py \
+          set -e
+          mkdir -p out
+          set +e
+          python eval_runner.py \
             --cases cases.yaml \
             --out "out/eval-${SAFE_MODEL}.md" \
             --endpoint "$ENDPOINT" \
@@ -51,14 +48,32 @@ jobs:
             --min-pass 0.90 \
             --max-p95 "${{ matrix.max_p95 }}" \
             --client-timeout 180
-            status=$?
-            echo "----- EVAL REPORT (eval-${SAFE_MODEL}.md) -----"
-            cat "out/eval-${SAFE_MODEL}.md" || true
-            exit $status
+          status=$?
+          echo "----- EVAL REPORT (eval-${SAFE_MODEL}.md) -----"
+          cat "out/eval-${SAFE_MODEL}.md" || true
+          exit $status
+
+      - name: Add report to Job Summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## Weekly evals — ${{ matrix.model }}";
+            echo;
+            echo "<details><summary>Open full report</summary>";
+            echo;
+            if [[ -f "out/eval-${{ steps.names.outputs.safe_model }}.md" ]]; then
+              sed -E 's/^# /### /' "out/eval-${{ steps.names.outputs.safe_model }}.md"
+            else
+              echo "_No report file found._"
+            fi
+            echo;
+            echo "</details>";
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload report artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-            name: evals-${{ steps.names.outputs.safe_model }}
-            path: out/eval-${{ steps.names.outputs.safe_model }}.md
+          name: evals-${{ steps.names.outputs.safe_model }}
+          path: out/eval-${{ steps.names.outputs.safe_model }}.md
